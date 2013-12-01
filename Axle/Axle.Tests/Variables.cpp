@@ -14,7 +14,7 @@ namespace AxleTests
 	public:
 		TEST_METHOD(Create)
 		{
-			auto testVar = Scope::Global.CreateMember<Variable<aFloat>>( "testFloat" );
+			auto testVar = Scope::Global.CreateMember<Variable>( "testFloat" );
 
 			Assert::AreNotSame( 0, reinterpret_cast<aInt>( testVar ), L"Variable not created." );
 		}

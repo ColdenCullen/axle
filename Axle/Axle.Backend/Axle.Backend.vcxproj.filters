@@ -13,6 +13,9 @@
     <ClInclude Include="Class.h">
       <Filter>Children</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Children</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Member.cpp">
@@ -25,6 +28,9 @@
       <Filter>Children</Filter>
     </ClCompile>
     <ClCompile Include="Class.cpp">
+      <Filter>Children</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
       <Filter>Children</Filter>
     </ClCompile>
   </ItemGroup>

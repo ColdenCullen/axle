@@ -20,11 +20,11 @@ namespace AxleTests
 
 			Class* TestClass = Scope::Global.CreateMember<Class>( className );
 
-			auto testInt = TestClass->CreateStaticMember<Variable<aInt>>( varName );
+			auto testInt = TestClass->StaticScope.CreateMember<Variable>( varName );
 			
-			testInt->value = value;
+			testInt->integer = value;
 
-			Assert::AreEqual( value, Scope::Global.GetMember<Class>( className )->GetStaticMember<Variable<aInt>>( varName )->value,
+			Assert::AreEqual( value, Scope::Global.GetMember<Class>( className )->StaticScope.GetMember<Variable>( varName )->integer,
 							  L"Variable test failed." );
 		}
 	};

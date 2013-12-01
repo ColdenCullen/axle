@@ -6,32 +6,16 @@
 
 USING_NAMESPACE( Axle, Backend )
 
-class Class : public Member, public Scope
+class Object;
+
+class Class : public Scope
 {
 public:
-	template<typename T>
-	T*					CreateStaticMember( aString name )
-	{
-		static_assert( std::is_base_of<Member, T>::value, "Invalid type parameter for CreateMember." );
+						Class( void ) : Scope( Type::Class ) { }
 
-		T* newMember = new T;
-		staticMembers[ name ] = newMember;
-		return newMember;
-	}
+	Scope				StaticScope;
 
-	template<typename T = Member>
-	T*					GetStaticMember( aString name )
-	{
-		auto itr = staticMembers.find( name );
-
-		if( itr != end( staticMembers ) )
-			return static_cast<T*>( itr->second );
-		else
-			return nullptr;
-	}
-
-private:
-	Scope::MemberMap	staticMembers;
+	Object*				CreateInstance( aString name, Scope* parentScope );
 };
 
 END_USING_NAMESPACE

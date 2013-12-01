@@ -5,11 +5,20 @@
 
 USING_NAMESPACE( Axle, Backend )
 
-template<typename T>
 class Variable : public Member
 {
 public:
-	T					value;
+	static bool			IsVariableType( Type type );
+
+						Variable( Type type = Type::Integer ) : Member( type ) { }
+
+	void				Cast( Type type );
+
+	union
+	{
+		aFloat			floatingPoint;
+		aInt			integer;
+	};
 };
 
 END_USING_NAMESPACE

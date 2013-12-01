@@ -68,12 +68,14 @@
   <ItemGroup>
     <ClInclude Include="Class.h" />
     <ClInclude Include="Member.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Scope.h" />
     <ClInclude Include="Variable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Class.cpp" />
     <ClCompile Include="Member.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="Variable.cpp" />
   </ItemGroup>

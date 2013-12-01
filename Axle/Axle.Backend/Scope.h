@@ -8,32 +8,19 @@
 
 USING_NAMESPACE( Axle, Backend )
 
-class Scope
+class Scope : public Member
 {
 public:
 	static Scope		Global;
 	typedef std::unordered_map<aString, Member*> MemberMap;
 
+						Scope( Type type = Type::Scope ) : Member( Type::Scope ) { }
+
+	Member*				CreateMember( Type type, aString name );
 	template<typename T>
-	T*					CreateMember( aString name )
-	{
-		static_assert( std::is_base_of<Member, T>::value, "Invalid type parameter for CreateMember." );
-
-		T* newMember = new T;
-		members[ name ] = newMember;
-		return newMember;
-	}
-
+	T*					CreateMember( aString name );
 	template<typename T = Member>
-	T*					GetMember( aString name )
-	{
-		auto itr = members.find( name );
-
-		if( itr != end( members ) )
-			return static_cast<T*>( itr->second );
-		else
-			return nullptr;
-	}
+	T*					GetMember( aString name );
 
 protected:
 	MemberMap			members;
