@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Member.h">
+      <Filter>Top Level</Filter>
+    </ClInclude>
+    <ClInclude Include="Scope.h">
+      <Filter>Top Level</Filter>
+    </ClInclude>
+    <ClInclude Include="Variable.h">
+      <Filter>Children</Filter>
+    </ClInclude>
+    <ClInclude Include="Class.h">
+      <Filter>Children</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Member.cpp">
+      <Filter>Top Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Scope.cpp">
+      <Filter>Top Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Variable.cpp">
+      <Filter>Children</Filter>
+    </ClCompile>
+    <ClCompile Include="Class.cpp">
+      <Filter>Children</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Top Level">
+      <UniqueIdentifier>{cc9bd35e-4a73-4593-8137-a27d23216356}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Children">
+      <UniqueIdentifier>{eaf317c5-b607-42b5-9763-ac0243cf3dc9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
