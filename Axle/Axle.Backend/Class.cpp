@@ -10,8 +10,16 @@ Object* Class::CreateInstance( aString name, Scope* parentScope )
 
 	for( auto member : members )
 	{
-		//auto var = inst->CreateMember<member.second>( member.first );
-		//static_cast<Variable*>( var )->integer = static_cast<Variable*>( member.second )->integer;
+		if( SAME_TYPE( *member.second, Variable ) )
+		{
+			auto var = inst->CreateMember<Variable>( member.first );
+			var->integer = static_cast<Variable*>( member.second )->integer;
+		}
+		else if( SAME_TYPE( *member.second, Object ) )
+		{
+			auto var = inst->CreateMember<Object>( member.first );
+			
+		}
 	}
 
 	return inst;

@@ -17,4 +17,6 @@ MAP_TYPE( aString,	std::string );
 #define USING_NAMESPACE( ns1, ns2 ) namespace ns1 { namespace ns2 {
 #define END_USING_NAMESPACE } }
 
+#define SAME_TYPE( t1, t2 ) (typeid(t1).hash_code()==typeid(t2).hash_code())
+
 #endif//__AXLE_CLOBAL
