@@ -8,13 +8,13 @@
 
 NAMESPACE_AXLE
 
-class Scope : public Member
+class Scope
 {
 public:
 	static Scope		Global;
 	typedef std::unordered_map<aString, Member*> MemberMap;
 
-	Scope( Scope* parentScope ) : Member( parentScope ) { }
+	Scope( Scope* parentScope ) : parent( parentScope ) { }
 
 	template<typename T>
 	T*					CreateMember( aString name )
@@ -24,19 +24,23 @@ public:
 		return newMember;
 	}
 
-	template<typename T = Member>
+	Member*				GetMember(  aString name ) { return GetMember<Member>( name ); }
+	template<typename T>
 	T*					GetMember( aString name )
 	{
 		auto itr = members.find( name );
 
 		if( itr != end( members ) )
 			return static_cast<T*>( itr->second );
+		else if( parent != nullptr )
+			return parent->GetMember<T>( name );
 		else
 			return nullptr;
 	}
 
 protected:
 	MemberMap			members;
+	Scope*				parent;
 };
 
 END_NAMESPACE
