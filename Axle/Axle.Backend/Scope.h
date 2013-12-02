@@ -19,6 +19,8 @@ public:
 	template<typename T>
 	T*					CreateMember( aString name )
 	{
+		static_assert( std::is_base_of<Member, T>::value, "Template parameter must extend Member." );
+
 		auto newMember = new T( this );
 		members[ name ] = newMember;
 		return newMember;
@@ -28,6 +30,8 @@ public:
 	template<typename T>
 	T*					GetMember( aString name )
 	{
+		static_assert( std::is_base_of<Member, T>::value, "Template parameter must extend Member." );
+
 		auto itr = members.find( name );
 
 		if( itr != end( members ) )
