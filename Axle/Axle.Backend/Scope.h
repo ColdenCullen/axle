@@ -6,7 +6,7 @@
 
 #include "Member.h"
 
-USING_NAMESPACE( Axle, Backend )
+NAMESPACE_AXLE
 
 class Scope : public Member
 {
@@ -39,6 +39,6 @@ protected:
 	MemberMap			members;
 };
 
-END_USING_NAMESPACE
+END_NAMESPACE
 
 #endif//__AXLE_SCOPE

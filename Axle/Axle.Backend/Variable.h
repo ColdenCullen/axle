@@ -3,7 +3,7 @@
 
 #include "Member.h"
 
-USING_NAMESPACE( Axle, Backend )
+NAMESPACE_AXLE
 
 class Variable : public Member
 {
@@ -17,6 +17,6 @@ public:
 	};
 };
 
-END_USING_NAMESPACE
+END_NAMESPACE
 
 #endif//__AXLE_VARIABLE

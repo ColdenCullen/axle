@@ -14,8 +14,8 @@ MAP_TYPE( aString,	std::string );
 
 #undef MAP_TYPE
 
-#define USING_NAMESPACE( ns1, ns2 ) namespace ns1 { namespace ns2 {
-#define END_USING_NAMESPACE } }
+#define NAMESPACE_AXLE namespace Axle {
+#define END_NAMESPACE }
 
 #define SAME_TYPE( t1, t2 ) (typeid(t1)==typeid(t2))
 

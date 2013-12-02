@@ -2,7 +2,7 @@
 //#include "Object.h"
 //#include "Variable.h"
 //
-//USING_NAMESPACE( Axle, Backend )
+//NAMESPACE_AXLE
 //
 //Object* Class::CreateInstance( aString name, Scope* parentScope )
 //{
@@ -25,4 +25,4 @@
 //	return inst;
 //}
 //
-//END_USING_NAMESPACE
+//END_NAMESPACE

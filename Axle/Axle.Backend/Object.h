@@ -5,7 +5,7 @@
 //#include "Scope.h"
 //#include "Class.h"
 //
-//USING_NAMESPACE( Axle, Backend )
+//NAMESPACE_AXLE
 //
 //class Object : public Scope
 //{
@@ -16,6 +16,6 @@
 //	Class*				parentClass;
 //};
 //
-//END_USING_NAMESPACE
+//END_NAMESPACE
 //
 //#endif//__AXLE_OBJECT

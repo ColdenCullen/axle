@@ -3,8 +3,8 @@
 #include "Object.h"
 #include "Class.h"
 
-USING_NAMESPACE( Axle, Backend )
+NAMESPACE_AXLE
 
 Scope Scope::Global( nullptr );
 
-END_USING_NAMESPACE
+END_NAMESPACE

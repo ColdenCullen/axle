@@ -4,7 +4,7 @@
 //#include "Member.h"
 //#include "Scope.h"
 //
-//USING_NAMESPACE( Axle, Backend )
+//NAMESPACE_AXLE
 //
 //class Object;
 //
@@ -18,6 +18,6 @@
 //	Object*				CreateInstance( aString name, Scope* parentScope );
 //};
 //
-//END_USING_NAMESPACE
+//END_NAMESPACE
 //
 //#endif//__AXLE_CLASS

@@ -1,7 +1,7 @@
 #ifndef __AXLE_MEMBER
 #define __AXLE_MEMBER
 
-USING_NAMESPACE( Axle, Backend )
+NAMESPACE_AXLE
 
 class Scope;
 
@@ -16,6 +16,6 @@ protected:
 	Scope*				parentScope;
 };
 
-END_USING_NAMESPACE
+END_NAMESPACE
 
 #endif//__AXLE_MEMBER

@@ -4,7 +4,7 @@
 #include "Scope.h"
 #include "Variable.h"
 
-using namespace Axle::Backend;
+using namespace Axle;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace AxleTests

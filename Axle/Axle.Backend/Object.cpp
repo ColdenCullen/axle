@@ -1,7 +1,7 @@
 #include "Object.h"
 
-USING_NAMESPACE( Axle, Backend )
+NAMESPACE_AXLE
 
 
 
-END_USING_NAMESPACE
+END_NAMESPACE
