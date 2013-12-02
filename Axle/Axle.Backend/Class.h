@@ -11,7 +11,7 @@ class Object;
 class Class : public Scope
 {
 public:
-						Class( void ) : Scope( Type::Class ) { }
+	Class( Scope* parentScope ) : Scope( parentScope ), StaticScope( parentScope ) { }
 
 	Scope				StaticScope;
 

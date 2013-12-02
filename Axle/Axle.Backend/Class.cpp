@@ -10,9 +10,8 @@ Object* Class::CreateInstance( aString name, Scope* parentScope )
 
 	for( auto member : members )
 	{
-		auto var = inst->CreateMember( member.second->GetType(), member.first );
-		if( Variable::IsVariableType( member.second->GetType() ) )
-			static_cast<Variable*>( var )->integer = static_cast<Variable*>( member.second )->integer;
+		//auto var = inst->CreateMember<member.second>( member.first );
+		//static_cast<Variable*>( var )->integer = static_cast<Variable*>( member.second )->integer;
 	}
 
 	return inst;

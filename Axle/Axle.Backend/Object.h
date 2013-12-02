@@ -10,7 +10,7 @@ USING_NAMESPACE( Axle, Backend )
 class Object : public Scope
 {
 public:
-						Object( void ) : Scope( Type::Object ) { }
+	Object( Scope* parentScope ) : Scope( parentScope ) { }
 
 private:
 	Class*				parentClass;

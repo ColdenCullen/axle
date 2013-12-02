@@ -8,11 +8,7 @@ USING_NAMESPACE( Axle, Backend )
 class Variable : public Member
 {
 public:
-	static bool			IsVariableType( Type type );
-
-						Variable( Type type = Type::Integer ) : Member( type ) { }
-
-	void				Cast( Type type );
+						Variable( Scope* parentScope ) : Member( parentScope ) { }
 
 	union
 	{
