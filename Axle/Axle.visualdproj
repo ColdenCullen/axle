@@ -90,7 +90,7 @@
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions />
-  <preBuildCommand />
+  <preBuildCommand>set PATH=Z:\D\dmd2\windows\\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\\\bin;%PATH%</preBuildCommand>
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
@@ -194,6 +194,7 @@
    <File path="backend\anative.d" />
    <File path="backend\aobject.d" />
    <File path="backend\ascope.d" />
+   <File path="backend\atype.d" />
   </Folder>
  </Folder>
 </DProject>

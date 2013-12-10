@@ -9,6 +9,7 @@ public static
 
 	this()
 	{
+		type = new aType( "aScope" );
 		Global = new aScope( null );
 	}
 }
@@ -19,14 +20,7 @@ public:
 		parent = parentScope;
 	}
 
-	T CreateMember( T : aObject )( string name )
-	{
-		auto newMember = new T( this );
-		members[ name ] = newMember;
-		return newMember;
-	}
-
-	T GetMember( T : aObject = aObject )( string name )
+	T GetMember( T = aObject )( string name )
 	{
 		T found = members[ name ];
 
@@ -38,6 +32,18 @@ public:
 			return null;
 	}
 
+	T CreateMember( T )( string name )
+	{
+		auto newMember = new T( this );
+		members[ name ] = newMember;
+		return newMember;
+	}
+
 protected:
 	aScope				parent;
+
+	unittest
+	{
+		assert( aScope.Type.className == "aScope" );
+	}
 }
