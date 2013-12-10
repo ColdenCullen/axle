@@ -9,7 +9,7 @@ public static
 
 	this()
 	{
-		type = new aType( "aScope" );
+		type = new aType( typeid(aScope) );
 		Global = new aScope( null );
 	}
 }

@@ -8,7 +8,7 @@ public static
 {
 	this()
 	{
-		type = new aType( "aObject" );
+		type = new aType( typeid(aObject) );
 	}
 
 	@property aType Type() { return type; }
