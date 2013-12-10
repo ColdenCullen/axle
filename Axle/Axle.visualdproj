@@ -191,6 +191,7 @@
  <Folder name="Axle">
   <Folder name="backend">
    <File path="backend\aclass.d" />
+   <File path="backend\anative.d" />
    <File path="backend\aobject.d" />
    <File path="backend\ascope.d" />
   </Folder>
