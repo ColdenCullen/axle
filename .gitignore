@@ -201,3 +201,7 @@ build
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcworkspace/contents.xcworkspacedata
+
+### Axle ###
+*.sln
+*.*proj

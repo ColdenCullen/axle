@@ -1,0 +1,12 @@
+{
+	"name": "axle",
+	"description": "A scripting language backed by D.",
+	"copyright": "Copyright © 2013, Colden Cullen",
+	"authors": [ "Colden Cullen" ],
+	"dependencies": {
+	},
+	"importPaths": [
+		"source/"
+	],
+	"targetPath": "bin/"
+}
