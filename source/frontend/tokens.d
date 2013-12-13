@@ -7,6 +7,8 @@ abstract class Token
 public:
 	abstract void addChar( char toAdd );
 	abstract override @property string toString();
+	bool isValid = true;
+	string token;
 }
 
 class IdentifierToken : Token
@@ -36,6 +38,7 @@ public:
 
 	override void addChar( char toAdd )
 	{
+		token ~= toAdd;
 		value += cast(float)( toAdd - 48 ) / pow( 10, ++digitCount );
 	}
 	override @property string toString() { return to!string( value ); }
@@ -61,6 +64,7 @@ public:
 
 	override void addChar( char toAdd )
 	{
+		token ~= toAdd;
 		value *= 10;
 		value += toAdd - 48;
 	}
@@ -95,6 +99,8 @@ public:
 
 	override void addChar( char toAdd )
 	{
+		token ~= toAdd;
+
 		switch( toAdd )
 		{
 		case '*':
@@ -132,9 +138,4 @@ public:
 		}
 	}
 	override @property string toString() { return to!string( type ); }
-}
-
-class InvalidToken : IdentifierToken
-{
-	override @property string toString() { return "Invalid"; }
 }

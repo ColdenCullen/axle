@@ -18,6 +18,12 @@ public:
 			workingString = workingString[ 1 .. $ ];
 		}
 
+		void addToToken( ref Token working, TokenState state, char newChar )
+		{
+			working.token ~= newChar;
+			consume( working, state, newChar );
+		}
+
 		void save( ref Token working, TokenState state, char newChar )
 		{
 			working.addChar( newChar );
@@ -41,8 +47,9 @@ public:
 			if( working.classinfo == IntegerToken.classinfo )
 				working = ( cast(IntegerToken)working ).toDecimal;
 			else
-				working = new InvalidToken();
+				working.isValid = false;
 
+			working.token ~= newChar;
 			consume( working, state, newChar );
 		}
 
@@ -54,7 +61,7 @@ public:
 
 		void invalid( ref Token working, TokenState state, char newChar )
 		{
-			working = new InvalidToken();
+			working.isValid = false;
 			consume( working, state, newChar );
 		}
 
@@ -89,12 +96,16 @@ public:
 		tm[ TokenState.Number ][ InputClass.Decimal ] =
 			TmEntry( TokenState.Number, &number_decimal );
 
+		// If in number and recieve digit, invalid
+		tm[ TokenState.Number ][ InputClass.Alpha ] =
+			TmEntry( TokenState.Number, &invalid );
+
+		tm[ TokenState.Number ][ InputClass.UnderScore ] =
+			TmEntry( TokenState.Number, &addToToken );
+
 		// Done with token
 		tm[ TokenState.Number ][ InputClass.WhiteSpace ] =
 		tm[ TokenState.Number ][ InputClass.SingleChar ] =
-		tm[ TokenState.Invalid ][ InputClass.WhiteSpace ] =
-		tm[ TokenState.Invalid ][ InputClass.SingleChar ] =
-		tm[ TokenState.Invalid ][ InputClass.Decimal ] =
 		tm[ TokenState.Identifier ][ InputClass.WhiteSpace ] =
 		tm[ TokenState.Identifier ][ InputClass.SingleChar ] =
 		tm[ TokenState.Identifier ][ InputClass.Decimal ] =
@@ -103,15 +114,7 @@ public:
 		// If at beginning and find invalid character, make invalid token
 		tm[ TokenState.Begin ][ InputClass.Zero ] =
 		tm[ TokenState.Begin ][ InputClass.Other ] =
-			TmEntry( TokenState.Invalid, &invalid );
-
-		// If token is invalid, continue collecting data
-		tm[ TokenState.Invalid ][ InputClass.Alpha ] =
-		tm[ TokenState.Invalid ][ InputClass.UnderScore ] =
-		tm[ TokenState.Invalid ][ InputClass.Zero ] =
-		tm[ TokenState.Invalid ][ InputClass.OneNine ] =
-		tm[ TokenState.Invalid ][ InputClass.Other ] =
-			TmEntry( TokenState.Invalid, &save );
+			TmEntry( TokenState.Begin, &invalid );
 
 		// If at beginning, and find an operator, save it
 		tm[ TokenState.Begin ][ InputClass.SingleChar ] =
@@ -167,7 +170,6 @@ private:
 		Begin,
 		Identifier,
 		Number,
-		Invalid,
 		End
 	};
 
@@ -205,7 +207,7 @@ private:
 			state = tm[ state ][ inputClass ].next;
 		}
 
-		if( token is null || token.classinfo == InvalidToken.classinfo )
+		if( token is null || !token.isValid )
 		{
 			// Handle error
 		}
