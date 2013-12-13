@@ -130,11 +130,9 @@ public:
 		// Token to save into
 		Token temp = null;
 
-		do
+		// Get next token
+		while( ( temp = getNextToken() ) !is null )
 		{
-			// Get next token
-			temp = getNextToken();
-
 			// If we hit the size of the array, double space.
 			// Only doubling space when capacity is hit (as opposed
 			// to incrementing size every time size changes) saves
@@ -144,7 +142,7 @@ public:
 
 			// Insert and increment counter
 			tokensFound[ numTokens++ ] = temp;
-		} while( temp !is null );
+		}
 
 		// Resize array to actual size to prevent garbage data being saved.
 		tokensFound.length = numTokens;
