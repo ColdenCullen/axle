@@ -1,5 +1,5 @@
-module backend.aclass;
-import backend.ascope;
+module core.aclass;
+import core.ascope;
 
 class aClass : aScope
 {

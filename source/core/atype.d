@@ -1,5 +1,5 @@
-module backend.atype;
-import backend.aobject;
+module core.atype;
+import core.aobject;
 
 template Property( string type, string name, string setterAccess = "private", string checkExpr = "true" ) {
 	const char[] Property = 

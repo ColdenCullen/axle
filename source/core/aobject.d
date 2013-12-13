@@ -1,6 +1,6 @@
-module backend.aobject;
-import backend.ascope;
-public import backend.atype;
+module core.aobject;
+import core.ascope;
+public import core.atype;
 
 class aObject
 {
