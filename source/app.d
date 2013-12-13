@@ -1,5 +1,5 @@
 import std.stdio, std.conv;
-import frontend.scanner;
+import frontend.scanner, frontend.tokens;
 
 void main()
 {
@@ -12,7 +12,7 @@ void main()
 
 		foreach( token; Scanner.getAllTokens( input ) )
 		{
-			writeln( "Token: '" ~ token.token ~ "'\tType: '" ~ to!string( token.type ) ~ "'" );
+			writeln( "Token: '" ~ token.toString ~ "'\tType: '" ~ token.classinfo.name ~ "'" );
 		}
 	}
 }

@@ -1,5 +1,5 @@
 module frontend.scanner;
-import frontend.token;
+import frontend.tokens;
 
 class Scanner
 {
@@ -11,134 +11,143 @@ public:
 		// ======================================
 		// Functions for parsing
 		// ======================================
-		TokenState ignore( Token working, TokenState state, char newChar )
+		void ignore( ref Token working, TokenState state, char newChar ) { }
+
+		void consume( ref Token working, TokenState state, char newChar )
 		{
-			return state;
+			workingString = workingString[ 1 .. $ ];
 		}
 
-		TokenState identifier_save( Token working, TokenState state, char newChar )
+		void save( ref Token working, TokenState state, char newChar )
 		{
-			working.token ~= newChar;
-			return TokenState.Identifier;
+			working.addChar( newChar );
+			consume( working, state, newChar );
 		}
 
-		TokenState identifier_start( Token working, TokenState state, char newChar )
+		void identifier_start( ref Token working, TokenState state, char newChar )
 		{
-			working.type = TokenType.Identifier;
-			return identifier_save( working, state, newChar );
+			working = new IdentifierToken();
+			save( working, state, newChar );
 		}
 
-		TokenState number_save( Token working, TokenState state, char newChar )
+		void number_start( ref Token working, TokenState state, char newChar )
 		{
-			working.token ~= newChar;
-			return TokenState.Number;
+			working = new IntegerToken();
+			save( working, state, newChar );
 		}
 
-		TokenState number_start( Token working, TokenState state, char newChar )
+		void number_decimal( ref Token working, TokenState state, char newChar )
 		{
-			working.type = TokenType.Integer;
-			return number_save( working, state, newChar );
-		}
-
-		TokenState number_decimal( Token working, TokenState state, char newChar )
-		{
-			if( working.type == TokenType.Integer )
-				working.type = TokenType.Decimal;
+			if( working.classinfo == IntegerToken.classinfo )
+				working = ( cast(IntegerToken)working ).toDecimal;
 			else
-				working.type = TokenType.Invalid;
+				working = new InvalidToken();
 
-			return number_save( working, state, newChar );
+			consume( working, state, newChar );
 		}
 
-		TokenState operator_save( Token working, TokenState state, char newChar )
+		void operator( ref Token working, TokenState state, char newChar )
 		{
-			working.token ~= newChar;
-			working.type = TokenType.Operator;
-			return TokenState.Operator;
+			working = new OperatorToken( newChar ~ "" );
+			consume( working, state, newChar );
 		}
 
-		TokenState end( Token working, TokenState state, char newChar )
+		void invalid( ref Token working, TokenState state, char newChar )
 		{
-			return TokenState.End;
-		}
-
-		TokenState invalid( Token working, TokenState state, char newChar )
-		{
-			working.type = TokenType.Invalid;
-			return state;
+			working = new InvalidToken();
+			consume( working, state, newChar );
 		}
 
 		// ======================================
 		// Initialize translation matrix
 		// ======================================
-		tm[ InputClass.WhiteSpace ][ TokenState.Begin ] =
-			&ignore;
-
-		// Done with token
-		tm[ InputClass.WhiteSpace ][ TokenState.Identifier ] =
-		tm[ InputClass.WhiteSpace ][ TokenState.Number ] =
-		tm[ InputClass.WhiteSpace ][ TokenState.Operator ] =
-			&end;
+		tm[ TokenState.Begin ][ InputClass.WhiteSpace ] =
+			TmEntry( TokenState.Begin, &consume );
 
 		// Token is identifier
-		tm[ InputClass.UnderScore ][ TokenState.Begin ] =
-		tm[ InputClass.Alpha ][ TokenState.Begin ] =
-			&identifier_start;
+		tm[ TokenState.Begin ][ InputClass.UnderScore ] =
+		tm[ TokenState.Begin ][ InputClass.Alpha ] =
+			TmEntry( TokenState.Identifier, &identifier_start );
 
-		tm[ InputClass.UnderScore ][ TokenState.Identifier ] =
-		tm[ InputClass.Alpha ][ TokenState.Identifier ] =
-		tm[ InputClass.Zero ][ TokenState.Identifier ] =
-		tm[ InputClass.OneNine ][ TokenState.Identifier ] =
-			&identifier_save;
+		// If you have an identifier, and find a valid character, save it
+		tm[ TokenState.Identifier ][ InputClass.UnderScore ] =
+		tm[ TokenState.Identifier ][ InputClass.Alpha ] =
+		tm[ TokenState.Identifier ][ InputClass.Zero ] =
+		tm[ TokenState.Identifier ][ InputClass.OneNine ] =
+			TmEntry( TokenState.Identifier, &save );
 
-		tm[ InputClass.OneNine ][ TokenState.Begin ] =
-			&number_start;
+		// If at the beginning and find a number, start a number
+		tm[ TokenState.Begin ][ InputClass.OneNine ] =
+			TmEntry( TokenState.Number, &number_start );
 
-		tm[ InputClass.OneNine ][ TokenState.Number ] =
-		tm[ InputClass.Zero ][ TokenState.Number ] =
-			&number_save;
+		// If have a number, and find a nother digit, save it
+		tm[ TokenState.Number ][ InputClass.OneNine ] =
+		tm[ TokenState.Number ][ InputClass.Zero ] =
+			TmEntry( TokenState.Number, &save );
 
-		tm[ InputClass.Decimal ][ TokenState.Number ] =
-			&number_decimal;
+		// If you have a number and find a decimal, convert number to decimal
+		tm[ TokenState.Number ][ InputClass.Decimal ] =
+			TmEntry( TokenState.Number, &number_decimal );
 
-		tm[ InputClass.Slash ][ TokenState.Begin ] =
-		tm[ InputClass.Slash ][ TokenState.Operator ] =
-		tm[ InputClass.Star ][ TokenState.Begin ] =
-		tm[ InputClass.Star ][ TokenState.Operator ] =
-		tm[ InputClass.OtherArith ][ TokenState.Begin ] =
-		tm[ InputClass.OtherArith ][ TokenState.Operator ] =
-			&operator_save;
+		// Done with token
+		tm[ TokenState.Number ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Number ][ InputClass.SingleChar ] =
+		tm[ TokenState.Invalid ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Invalid ][ InputClass.SingleChar ] =
+		tm[ TokenState.Invalid ][ InputClass.Decimal ] =
+		tm[ TokenState.Identifier ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Identifier ][ InputClass.SingleChar ] =
+		tm[ TokenState.Identifier ][ InputClass.Decimal ] =
+			TmEntry( TokenState.End, &ignore );
 
-		tm[ InputClass.WhiteSpace ][ TokenState.Operator ] =
-		tm[ InputClass.Alpha ][ TokenState.Operator ] =
-		tm[ InputClass.UnderScore ][ TokenState.Operator ] =
-		tm[ InputClass.Zero ][ TokenState.Operator ] =
-		tm[ InputClass.OneNine ][ TokenState.Operator ] =
-		tm[ InputClass.Decimal ][ TokenState.Operator ] =
-		tm[ InputClass.Other ][ TokenState.Operator ] =
-			&end;
+		// If at beginning and find invalid character, make invalid token
+		tm[ TokenState.Begin ][ InputClass.Zero ] =
+		tm[ TokenState.Begin ][ InputClass.Other ] =
+			TmEntry( TokenState.Invalid, &invalid );
 
-		tm[ InputClass.Zero ][ TokenState.Begin ] =
-		tm[ InputClass.Other ][ TokenState.Begin ] =
-			&invalid;
+		// If token is invalid, continue collecting data
+		tm[ TokenState.Invalid ][ InputClass.Alpha ] =
+		tm[ TokenState.Invalid ][ InputClass.UnderScore ] =
+		tm[ TokenState.Invalid ][ InputClass.Zero ] =
+		tm[ TokenState.Invalid ][ InputClass.OneNine ] =
+		tm[ TokenState.Invalid ][ InputClass.Other ] =
+			TmEntry( TokenState.Invalid, &save );
+
+		// If at beginning, and find an operator, save it
+		tm[ TokenState.Begin ][ InputClass.SingleChar ] =
+		tm[ TokenState.Begin ][ InputClass.Decimal ] =
+			TmEntry( TokenState.End, &operator );
 	}
 
 	Token[] getAllTokens( string toParse )
 	{
+		// Save string to parse
 		workingString = toParse;
+		// Number of tokens found
 		uint numTokens = 0;
+		// Create array of tokens to save to
 		Token[] tokensFound = new Token[ 1 ];
-		Token temp;
+		// Token to save into
+		Token temp = null;
 
-		while( ( temp = getNextToken() ) !is null )
+		do
 		{
-			// If we hit the size of the array, double space
+			// Get next token
+			temp = getNextToken();
+
+			// If we hit the size of the array, double space.
+			// Only doubling space when capacity is hit (as opposed
+			// to incrementing size every time size changes) saves
+			// allocation time.
 			if( numTokens == tokensFound.length )
 				tokensFound.length *= 2;
 
 			// Insert and increment counter
 			tokensFound[ numTokens++ ] = temp;
-		}
+		} while( temp !is null );
+
+		// Resize array to actual size to prevent garbage data being saved.
+		tokensFound.length = numTokens;
 
 		return tokensFound;
 	}
@@ -146,28 +155,65 @@ public:
 private:
 	enum InputClass : uint
 	{
-		WhiteSpace = 0,
-		Alpha = 1,
-		UnderScore = 2,
-		Zero = 3,
-		OneNine = 4,
-		Slash = 5,
-		Star = 6,
-		Decimal = 7,
-		OtherArith = 8,
+		WhiteSpace,
+		Alpha,
+		UnderScore,
+		Zero,
+		OneNine,
+		SingleChar,
+		Decimal,
 		Other
 	};
 
-	enum TokenState : uint {
-		Begin = 0,
-		Identifier = 1,
-		Number = 2,
-		Operator = 3,
-		End = 99
+	enum TokenState {
+		Begin,
+		Identifier,
+		Number,
+		Invalid,
+		End
 	};
 
 	string workingString;
-	TokenState delegate( Token working, TokenState state, char newChar )[ TokenState ][ InputClass ] tm;
+
+	struct TmEntry
+	{
+		TokenState next;
+		void delegate( ref Token working, TokenState state, char newChar ) action;
+	}
+
+	TmEntry[ InputClass ][ TokenState ] tm;
+
+	Token getNextToken()
+	{
+		if( workingString.length == 0 )
+			return null;
+
+		// Current working token
+		Token token;
+		// Beginning state
+		TokenState state = TokenState.Begin;
+
+		// Iterate until we hit the end or run out of characters
+		while( state != TokenState.End && workingString.length )
+		{
+			// Get the character
+			char newChar = workingString[ 0 ];
+			// Get the class of the character
+			auto inputClass = getClass( newChar );
+
+			// Perform specified action
+			tm[ state ][ inputClass ].action( token, state, newChar );
+			// Set next state
+			state = tm[ state ][ inputClass ].next;
+		}
+
+		if( token is null || token.classinfo == InvalidToken.classinfo )
+		{
+			// Handle error
+		}
+
+		return token;
+	}
 
 	InputClass getClass( char character )
 	{
@@ -178,66 +224,40 @@ private:
 
 		switch( character )
 		{
-		case '\n':
-		case '\t':
-		case ' ':
-			return InputClass.WhiteSpace;
-		case '_':
-			return InputClass.UnderScore;
-		case '0':
-			return InputClass.Zero;
-		case '1':
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			return InputClass.OneNine;
-		case '.':
-			return InputClass.Decimal;
-		case '*':
-			return InputClass.Star;
-		case '/':
-			return InputClass.Slash;
-		case '+':
-		case '-':
-			return InputClass.OtherArith;
-		default:
-			return InputClass.Other;
+			case '\n':
+			case '\t':
+			case ' ':
+				return InputClass.WhiteSpace;
+			case '_':
+				return InputClass.UnderScore;
+			case '0':
+				return InputClass.Zero;
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				return InputClass.OneNine;
+			case '.':
+				return InputClass.Decimal;
+			case '*':
+			case '/':
+			case '+':
+			case '-':
+			case '{':
+			case '}':
+			case '[':
+			case ']':
+			case '(':
+			case ')':
+				return InputClass.SingleChar;
+			default:
+				return InputClass.Other;
 		}
-	}
-
-	Token getNextToken()
-	{
-		if( workingString.length == 0 )
-			return null;
-
-		auto newTok = new Token();
-		TokenState state = TokenState.Begin;
-
-		while( state != TokenState.End && workingString.length )
-		{
-			// TODO: Get actual state
-			char newChar = workingString[ 0 ];
-			InputClass inputClass = getClass( newChar );
-			
-			state = tm[ inputClass ][ state ]( newTok, state, newChar );
-
-			if( state != TokenState.End )
-				workingString = workingString[ 1 .. $ ];
-		}
-
-		if( newTok.type == TokenType.Invalid )
-		{
-			// Handle error
-		}
-
-		newTok.postProcess();
-
-		return newTok;
 	}
 }
 }
