@@ -1,4 +1,4 @@
 axle
 ====
 
-A scripting language backed by C++
+A scripting language backed by D.
