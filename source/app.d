@@ -1,18 +1,20 @@
-import std.stdio, std.conv;
-import frontend.scanner, frontend.tokens;
+import console.scanner;
+import std.stdio;
 
-void main()
+void main( string[] args )
 {
-	string input;
-
-	while( true )
+	switch( args[ 1 ] )
 	{
-		writefln( "Enter a string of tokens." );
-		input = readln();
-
-		foreach( token; Scanner.getAllTokens( input ) )
-		{
-			writeln( "Token: '" ~ token.toString ~ "'\tType: '" ~ token.classinfo.name ~ "'" );
-		}
+		case "scanner":
+			runTerminal();
+			break;
+		default:
+			writeln( args );
+			printHelp();
 	}
+}
+
+void printHelp()
+{
+
 }
