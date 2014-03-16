@@ -10,11 +10,10 @@ void runTerminal()
 	while( true )
 	{
 		writef( "%s> ", inputs++ );
-		string input = readln();
 		
-		foreach( token; Scanner.getAllTokens( input ) )
+		foreach( token; Scanner.getAllTokens( readln() ) )
 		{
-			writeln( "Token: '" ~ token.toString ~ "'\tType: '" ~ token.classinfo.name ~ "'" );
+			writeln( "Token: '", token.toString, "'\tType: '", typeid(token).name, "'\tIs Valid: ", token.isValid  );
 		}
 	}
 }

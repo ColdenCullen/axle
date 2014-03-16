@@ -6,7 +6,10 @@ abstract class Token
 {
 public:
 	abstract void addChar( char toAdd );
-	abstract override @property string toString();
+	override string toString()
+	{
+		return token;
+	}
 	bool isValid = true;
 	string token;
 }
@@ -71,13 +74,49 @@ public:
 	override @property string toString() { return to!string( value ); }
 }
 
+class SemicolonToken : Token
+{
+public:
+	this()
+	{
+		token = ";";
+	}
+
+	override void addChar( char newChar ) { }
+}
+
+class CommentToken : Token
+{
+public:
+	enum CommentType
+	{
+		SingleLine,
+		MultiLine,
+		Documentation,
+	}
+
+	CommentType type;
+
+	this( CommentType type )
+	{
+		this.type = type;
+	}
+
+	override void addChar( char toAdd )
+	{
+		token ~= toAdd;
+	}
+}
+
 class OperatorToken : Token
 {
 public:
 	enum OperatorType
 	{
-		Decimal,
+		Assignment,
+		Dot,
 		Star,
+		DoubleSlash,
 		Slash,
 		Plus,
 		Minus,
@@ -86,7 +125,8 @@ public:
 		OpenBracket,
 		CloseBracket,
 		OpenParenthesis,
-		CloseParenthesis
+		CloseParenthesis,
+		Invalid,
 	}
 
 	OperatorType type;
@@ -101,39 +141,50 @@ public:
 	{
 		token ~= toAdd;
 
-		switch( toAdd )
+		switch( token )
 		{
-		case '*':
+		case "=":
+			type = OperatorType.Assignment;
+			break;
+		case ".":
+			type = OperatorType.Dot;
+			break;
+		case "*":
 			type = OperatorType.Star;
 			break;
-		case '/':
+		case "//":
+			type = OperatorType.DoubleSlash;
+			break;
+		case "/":
 			type = OperatorType.Slash;
 			break;
-		case '+':
+		case "+":
 			type = OperatorType.Plus;
 			break;
-		case '-':
+		case "-":
 			type = OperatorType.Minus;
 			break;
-		case '{':
+		case "{":
 			type = OperatorType.OpenBrace;
 			break;
-		case '}':
+		case "}":
 			type = OperatorType.CloseBrace;
 			break;
-		case '[':
+		case "[":
 			type = OperatorType.OpenBracket;
 			break;
-		case ']':
+		case "]":
 			type = OperatorType.CloseBracket;
 			break;
-		case '(':
+		case "(":
 			type = OperatorType.OpenParenthesis;
 			break;
-		case ')':
+		case ")":
 			type = OperatorType.CloseParenthesis;
 			break;
 		default:
+			type = OperatorType.Invalid;
+			isValid = false;
 			break;
 		}
 	}

@@ -1,6 +1,8 @@
 module frontend.scanner;
 import frontend.tokens;
 
+import std.traits;
+
 class Scanner
 {
 static
@@ -11,58 +13,96 @@ public:
 		// ======================================
 		// Functions for parsing
 		// ======================================
-		void ignore( ref Token working, TokenState state, char newChar ) { }
+		void ignore( ref Token working, char newChar ) { }
 
-		void consume( ref Token working, TokenState state, char newChar )
+		void consume( ref Token working, char newChar )
 		{
 			workingString = workingString[ 1 .. $ ];
 		}
 
-		void addToToken( ref Token working, TokenState state, char newChar )
+		void addToToken( ref Token working, char newChar )
 		{
 			working.token ~= newChar;
-			consume( working, state, newChar );
+			consume( working, newChar );
 		}
 
-		void save( ref Token working, TokenState state, char newChar )
+		void save( ref Token working, char newChar )
 		{
 			working.addChar( newChar );
-			consume( working, state, newChar );
+			consume( working, newChar );
 		}
 
-		void identifier_start( ref Token working, TokenState state, char newChar )
+		void identifier_start( ref Token working, char newChar )
 		{
 			working = new IdentifierToken();
-			save( working, state, newChar );
+			save( working, newChar );
 		}
 
-		void number_start( ref Token working, TokenState state, char newChar )
+		void number_start( ref Token working, char newChar )
 		{
 			working = new IntegerToken();
-			save( working, state, newChar );
+			save( working, newChar );
 		}
 
-		void number_decimal( ref Token working, TokenState state, char newChar )
+		void number_decimal( ref Token working, char newChar )
 		{
-			if( working.classinfo == IntegerToken.classinfo )
+			if( typeid(working) == typeid(IntegerToken) )
 				working = ( cast(IntegerToken)working ).toDecimal;
 			else
 				working.isValid = false;
 
 			working.token ~= newChar;
-			consume( working, state, newChar );
+			consume( working, newChar );
 		}
 
-		void operator( ref Token working, TokenState state, char newChar )
+		void operator_start( ref Token working, char newChar )
 		{
 			working = new OperatorToken( newChar ~ "" );
-			consume( working, state, newChar );
+			consume( working, newChar );
 		}
 
-		void invalid( ref Token working, TokenState state, char newChar )
+		void operator_working( ref Token working, char newChar )
+		{
+			save( working, newChar );
+
+			if( (cast(OperatorToken)working).type == OperatorToken.OperatorType.DoubleSlash )
+			{
+				working = new CommentToken( CommentToken.CommentType.SingleLine );
+				working.token = "//";
+				currentState = TokenState.Comment;
+			}
+		}
+
+		void semicolon( ref Token working, char newChar )
+		{
+			working = new SemicolonToken;
+			consume( working, newChar );
+		}
+
+		void comment( ref Token working, char newChar )
+			{
+				auto com = cast(CommentToken)working;
+
+				switch( com.type )
+				{
+					case CommentToken.CommentType.SingleLine:
+						if( newChar == '\n' )
+						{
+							currentState = TokenState.End;
+							return;
+						}
+						break;
+					default:
+						break;
+				}
+
+				save( working, newChar );
+			}
+
+		void invalid( ref Token working, char newChar )
 		{
 			working.isValid = false;
-			consume( working, state, newChar );
+			consume( working, newChar );
 		}
 
 		// ======================================
@@ -93,7 +133,7 @@ public:
 			TmEntry( TokenState.Number, &save );
 
 		// If you have a number and find a decimal, convert number to decimal
-		tm[ TokenState.Number ][ InputClass.Decimal ] =
+		tm[ TokenState.Number ][ InputClass.Dot ] =
 			TmEntry( TokenState.Number, &number_decimal );
 
 		// If in number and recieve digit, invalid
@@ -103,52 +143,58 @@ public:
 		tm[ TokenState.Number ][ InputClass.UnderScore ] =
 			TmEntry( TokenState.Number, &addToToken );
 
-		// Done with token
-		tm[ TokenState.Number ][ InputClass.WhiteSpace ] =
-		tm[ TokenState.Number ][ InputClass.SingleChar ] =
-		tm[ TokenState.Identifier ][ InputClass.WhiteSpace ] =
-		tm[ TokenState.Identifier ][ InputClass.SingleChar ] =
-		tm[ TokenState.Identifier ][ InputClass.Decimal ] =
-			TmEntry( TokenState.End, &ignore );
-
 		// If at beginning and find invalid character, make invalid token
 		tm[ TokenState.Begin ][ InputClass.Zero ] =
 		tm[ TokenState.Begin ][ InputClass.Other ] =
 			TmEntry( TokenState.Begin, &invalid );
 
 		// If at beginning, and find an operator, save it
-		tm[ TokenState.Begin ][ InputClass.SingleChar ] =
-		tm[ TokenState.Begin ][ InputClass.Decimal ] =
-			TmEntry( TokenState.End, &operator );
+		tm[ TokenState.Begin ][ InputClass.Operator ] =
+			TmEntry( TokenState.Operator, &operator_start );
+
+		tm[ TokenState.Operator ][ InputClass.Operator ] =
+			TmEntry( TokenState.Operator, &operator_working );
+
+		tm[ TokenState.Begin ][ InputClass.Semicolon ] =
+				TmEntry( TokenState.End, &semicolon );
+
+		// If at beginning and find a ., save it and end
+		tm[ TokenState.Begin ][ InputClass.Dot ] =
+			TmEntry( TokenState.End, &operator_start );
+		
+		foreach( member; EnumMembers!InputClass )
+			tm[ TokenState.Comment ][ member ] =
+				TmEntry( TokenState.Comment, &comment );
+
+		// Done with token
+		tm[ TokenState.Number ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Number ][ InputClass.Operator ] =
+		tm[ TokenState.Number ][ InputClass.Semicolon ] =
+		tm[ TokenState.Operator ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Operator ][ InputClass.Dot ] =
+		tm[ TokenState.Operator ][ InputClass.Semicolon ] =
+		tm[ TokenState.Identifier ][ InputClass.WhiteSpace ] =
+		tm[ TokenState.Identifier ][ InputClass.Operator ] =
+		tm[ TokenState.Identifier ][ InputClass.Dot ] =
+		tm[ TokenState.Identifier ][ InputClass.Semicolon ] =
+			TmEntry( TokenState.End, &ignore );
 	}
 
 	Token[] getAllTokens( string toParse )
 	{
 		// Save string to parse
 		workingString = toParse;
-		// Number of tokens found
-		uint numTokens = 0;
 		// Create array of tokens to save to
-		Token[] tokensFound = new Token[ 1 ];
+		Token[] tokensFound;
 		// Token to save into
 		Token temp = null;
 
 		// Get next token
 		while( ( temp = getNextToken() ) !is null )
 		{
-			// If we hit the size of the array, double space.
-			// Only doubling space when capacity is hit (as opposed
-			// to incrementing size every time size changes) saves
-			// allocation time.
-			if( numTokens == tokensFound.length )
-				tokensFound.length *= 2;
-
 			// Insert and increment counter
-			tokensFound[ numTokens++ ] = temp;
+			tokensFound ~= temp;
 		}
-
-		// Resize array to actual size to prevent garbage data being saved.
-		tokensFound.length = numTokens;
 
 		return tokensFound;
 	}
@@ -161,24 +207,31 @@ private:
 		UnderScore,
 		Zero,
 		OneNine,
-		SingleChar,
-		Decimal,
-		Other
+		Operator,
+		Dot,
+		Assignment,
+		Semicolon,
+		Other,
 	};
 
 	enum TokenState {
 		Begin,
 		Identifier,
 		Number,
-		End
+		Operator,
+		Comment,
+		End,
 	};
+	
 
+	// Beginning state
+	TokenState currentState;
 	string workingString;
 
 	struct TmEntry
 	{
 		TokenState next;
-		void delegate( ref Token working, TokenState state, char newChar ) action;
+		void delegate( ref Token working, char newChar ) action;
 	}
 
 	TmEntry[ InputClass ][ TokenState ] tm;
@@ -187,24 +240,29 @@ private:
 	{
 		if( workingString.length == 0 )
 			return null;
-
+		
+		// Reset state		
+		currentState = TokenState.Begin;
+	
 		// Current working token
 		Token token;
-		// Beginning state
-		TokenState state = TokenState.Begin;
 
 		// Iterate until we hit the end or run out of characters
-		while( state != TokenState.End && workingString.length )
+		while( currentState != TokenState.End && workingString.length )
 		{
 			// Get the character
 			char newChar = workingString[ 0 ];
 			// Get the class of the character
 			auto inputClass = getClass( newChar );
+			
+			// Get next entry
+			auto entry = &tm[ currentState ][ inputClass ];
+
+			// Set next state
+			currentState = entry.next;
 
 			// Perform specified action
-			tm[ state ][ inputClass ].action( token, state, newChar );
-			// Set next state
-			state = tm[ state ][ inputClass ].next;
+			entry.action( token, newChar );
 		}
 
 		if( token is null || !token.isValid )
@@ -217,11 +275,6 @@ private:
 
 	InputClass getClass( char character )
 	{
-		// If letter
-		if( ( character >= 'a' && character <= 'z' ) ||
-			( character >= 'A' && character <= 'Z' ) )
-			return InputClass.Alpha;
-
 		switch( character )
 		{
 			case '\n':
@@ -232,18 +285,10 @@ private:
 				return InputClass.UnderScore;
 			case '0':
 				return InputClass.Zero;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
+			case '1': .. case '9':
 				return InputClass.OneNine;
 			case '.':
-				return InputClass.Decimal;
+				return InputClass.Dot;
 			case '*':
 			case '/':
 			case '+':
@@ -254,7 +299,13 @@ private:
 			case ']':
 			case '(':
 			case ')':
-				return InputClass.SingleChar;
+			case '=':
+				return InputClass.Operator;
+			case ';':
+				return InputClass.Semicolon;
+			case 'a': .. case 'z':
+			case 'A': .. case 'Z':
+				return InputClass.Alpha;
 			default:
 				return InputClass.Other;
 		}
