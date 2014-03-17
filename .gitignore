@@ -27,7 +27,6 @@ build/
 *_p.c
 *.ilk
 *.meta
-*.obj
 *.pch
 *.pdb
 *.pgc
@@ -46,6 +45,7 @@ build/
 *.pidb
 *.log
 *.scc
+*.lib
 
 # Visual C++ cache files
 ipch/
@@ -156,52 +156,29 @@ $RECYCLE.BIN/
 # Mac crap
 .DS_Store
 
-### C++ ###
-# Compiled Object files
-*.slo
-*.lo
-*.o
+### MonoDevelop ###
+#User Specific
+*.userprefs
+*.usertasks
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
+#Mono Project Files
+*.pidb
+*.resources
+test-results/
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
+# ========================
+# Dash stuffs
+# ========================
 
-### Windows ###
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
-
-# Folder config file
-Desktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-### OSX ###
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-
-
-# Thumbnails
-._*
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
-
-### Xcode ###
-build
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcworkspace/contents.xcworkspacedata
-
-### Axle ###
+.dub/
 *.sln
-*.*proj
+*.visualdproj
+*.dproj
+*.exe
+*.exe_cv
+*.dll
+*.dll_cv
+*.lib
+*.lib_cv
+__dummy.html
+docs.json
