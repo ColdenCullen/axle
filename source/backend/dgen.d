@@ -354,11 +354,6 @@ class DGenerator : ASTVisitor
 			               debugSpecification.identifierOrInteger.text, "\"/>");
 	}
 	
-	override void visit(const Declaration declaration)
-	{
-		mixin (tagAndAccept!"declaration");
-	}
-	
 	override void visit(const DeclarationsAndStatements declarationsAndStatements)
 	{
 		mixin (tagAndAccept!"declarationsAndStatements");
@@ -598,10 +593,20 @@ class DGenerator : ASTVisitor
 			output.writeln("</gotoStatement>");
 		}
 	}
-	
-	override void visit(const IdentifierChain identifierChain)
+
+	override void visit( const IdentifierChain identifierChain )
 	{
-		mixin (tagAndAccept!"identifierChain");
+		auto idents = identifierChain.identifiers;
+		if( idents.length )
+		{
+			visit( idents[ 0 ] );
+
+			foreach( i; 1..idents.length )
+			{
+				output.write( "." );
+				visit( idents[ i ] );
+			}
+		}
 	}
 	
 	override void visit(const IdentifierList identifierList)
@@ -675,11 +680,6 @@ class DGenerator : ASTVisitor
 	override void visit(const ImportBindings importBindings)
 	{
 		mixin (tagAndAccept!"importBindings");
-	}
-	
-	override void visit(const ImportDeclaration importDeclaration)
-	{
-		mixin (tagAndAccept!"importDeclaration");
 	}
 	
 	override void visit(const ImportExpression importExpression)
@@ -852,17 +852,11 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"mixinTemplateName");
 	}
 	
-	override void visit(const Module module_)
-	{
-		output.writeln("<?xml version=\"1.0\"?>");
-		output.writeln("<module>");
-		module_.accept(this);
-		output.writeln("</module>");
-	}
-	
 	override void visit(const ModuleDeclaration moduleDeclaration)
 	{
-		mixin (tagAndAccept!"moduleDeclaration");
+		output.write( "module " );
+		moduleDeclaration.accept( this );
+		output.writeln( ";" );
 	}
 	
 	override void visit(const MulExpression mulExpression)
@@ -1041,14 +1035,15 @@ class DGenerator : ASTVisitor
 		output.writeln("</shiftExpression>");
 	}
 	
-	override void visit(const SingleImport singleImport)
+	override void visit( const SingleImport singleImport )
 	{
-		if (singleImport.rename.type == tok!"")
-			output.writeln("<singleImport>");
-		else
-			output.writeln("<singleImport rename=\"", singleImport.rename.text, "\">");
-		visit(singleImport.identifierChain);
-		output.writeln("</singleImport>");
+		output.write( "import " );
+
+		if( singleImport.rename.type != tok!"" )
+			output.write( singleImport.rename.text, " = " );
+
+		visit( singleImport.identifierChain );
+		output.writeln( ";" );
 	}
 	
 	override void visit(const SliceExpression sliceExpression)
@@ -1292,8 +1287,11 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"throwStatement");
 	}
 	
-	override void visit(const Token token)
+	override void visit( const Token token )
 	{
+		//*
+		output.write( token.text );
+		/*/
 		string tagName;
 		switch (token.type)
 		{
@@ -1317,6 +1315,7 @@ class DGenerator : ASTVisitor
 			default: output.writeln("<", str(token.type), "/>"); return;
 		}
 		output.writeln("<", tagName, ">", xmlEscape(token.text), "</", tagName, ">");
+		//*/
 	}
 	
 	override void visit(const TraitsExpression traitsExpression)
