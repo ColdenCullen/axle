@@ -22,17 +22,13 @@ class DGenerator : ASTVisitor
 {
 	override void visit(const AddExpression addExpression)
 	{
-		output.writeln("<addExpression operator=\"", str(addExpression.operator) ,"\">");
-		output.writeln("<left>");
-		visit(addExpression.left);
-		output.writeln("</left>");
-		if (addExpression.right !is null)
+		visit( addExpression.left );
+		output.write( " ", str( addExpression.operator ), " " );
+
+		if( addExpression.right !is null )
 		{
-			output.writeln("<right>");
-			visit(addExpression.right);
-			output.writeln("</right>");
+			visit( addExpression.right );
 		}
-		output.writeln("</addExpression>");
 	}
 	
 	override void visit(const AliasDeclaration aliasDeclaration)
@@ -160,14 +156,14 @@ class DGenerator : ASTVisitor
 		output.writeln("</atAttribute>");
 	}
 	
-	override void visit(const Attribute attribute)
+	override void visit( const Attribute attribute )
 	{
-		output.writeln("<attribute>");
-		if (attribute.attribute == tok!"")
-			attribute.accept(this);
+		//output.writeln( "<attribute>" );
+		if( attribute.attribute == tok!"" )
+			attribute.accept( this );
 		else
-			output.writeln(str(attribute.attribute));
-		output.writeln("</attribute>");
+			output.write( str( attribute.attribute ) );
+		//output.writeln( "</attribute>" );
 	}
 	
 	override void visit(const AttributeDeclaration attributeDeclaration)
@@ -176,18 +172,17 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"attributeDeclaration");
 	}
 	
-	override void visit(const AutoDeclaration autoDec)
+	override void visit( const AutoDeclaration autoDec )
 	{
-		output.writeln("<autoDeclaration>");
-		for (size_t i = 0; i < autoDec.identifiers.length; i++)
+		//output.writeln( "<autoDeclaration>" );
+		for( size_t i = 0; i < autoDec.identifiers.length; i++ )
 		{
-			output.writeln("<item>");
-			output.writeln("<name line=\"", autoDec.identifiers[i].line, "\">",
-			autoDec.identifiers[i].text, "</name>");
-			visit(autoDec.initializers[i]);
-			output.writeln("</item>");
+			//output.writeln( "<item>" );
+			output.write( "auto ", autoDec.identifiers[ i ].text, " = " );
+			visit( autoDec.initializers[ i ] );
+			//output.writeln( "</item>" );
 		}
-		output.writeln("</autoDeclaration>");
+		//output.writeln( "</autoDeclaration>" );
 	}
 	
 	override void visit(const BlockStatement blockStatement)
@@ -774,12 +769,12 @@ class DGenerator : ASTVisitor
 	override void visit(const Initializer initializer)
 	{
 		if (initializer.nonVoidInitializer is null)
-			output.writeln("<initializer void=\"true\"/>");
+		{
+			output.write( "void" );
+		}
 		else
 		{
-			output.writeln("<initializer>");
-			visit(initializer.nonVoidInitializer);
-			output.writeln("</initializer>");
+			visit( initializer.nonVoidInitializer );
 		}
 	}
 	
@@ -928,7 +923,9 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const NewExpression newExpression)
 	{
-		mixin (tagAndAccept!"newExpression");
+		//mixin (tagAndAccept!"newExpression");
+		output.write( "new " );
+		newExpression.accept( this );
 	}
 	
 	override void visit(const StatementNoCaseNoDefault statementNoCaseNoDefault)
@@ -939,7 +936,8 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const NonVoidInitializer nonVoidInitializer)
 	{
-		mixin (tagAndAccept!"nonVoidInitializer");
+		//mixin (tagAndAccept!"nonVoidInitializer");
+		nonVoidInitializer.accept( this );
 	}
 	
 	override void visit(const OrExpression orExpression)
@@ -1119,7 +1117,29 @@ class DGenerator : ASTVisitor
 	override void visit(const Statement statement)
 	{
 		//mixin (tagAndAccept!"statement");
-		statement.accept( this );
+		//statement.accept( this );
+		if( statement.statementNoCaseNoDefault )
+		{
+			//output.write( "<statementNoCaseNoDefault>" );
+			visit( statement.statementNoCaseNoDefault );
+		}
+		if( statement.caseStatement )
+		{
+			output.write( "<caseStatement>" );
+			visit( statement.caseStatement );
+		}
+		if( statement.caseRangeStatement )
+		{
+			output.write( "<caseRangeStatement>" );
+			visit( statement.caseRangeStatement );
+		}
+		if( statement.defaultStatement )
+		{
+			output.write( "<defaultStatement>" );
+			visit( statement.defaultStatement );
+		}
+
+		output.writeln( ";" );
 	}
 	
 	override void visit(const StaticAssertDeclaration staticAssertDeclaration)
@@ -1149,7 +1169,8 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const StorageClass storageClass)
 	{
-		mixin (tagAndAccept!"storageClass");
+		//mixin (tagAndAccept!"storageClass");
+		storageClass.accept( this );
 	}
 	
 	override void visit(const StructBody structBody)
@@ -1492,10 +1513,11 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const VariableDeclaration variableDeclaration)
 	{
-		output.writeln("<variableDeclaration>");
-		writeDdoc(variableDeclaration.comment);
-		variableDeclaration.accept(this);
-		output.writeln("</variableDeclaration>");
+		//output.writeln("<variableDeclaration>");
+		writeDdoc( variableDeclaration.comment );
+		variableDeclaration.accept( this );
+		output.writeln( ";" );
+		//output.writeln("</variableDeclaration>");
 	}
 	
 	override void visit(const Vector vector)
@@ -1723,7 +1745,7 @@ class XMLPrinter : ASTVisitor
 		{
 			output.writeln("<item>");
 			output.writeln("<name line=\"", autoDec.identifiers[i].line, "\">",
-				autoDec.identifiers[i].text, "</name>");
+			autoDec.identifiers[i].text, "</name>");
 			visit(autoDec.initializers[i]);
 			output.writeln("</item>");
 		}
