@@ -138,7 +138,13 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const AssignExpression assignExpression)
 	{
-		assignExpression.accept( this );
+		visit( assignExpression.ternaryExpression );
+
+		if( assignExpression.assignExpression )
+		{
+			output.write( " ", str( assignExpression.operator ), " ");
+			visit( assignExpression.assignExpression );
+		}
 	}
 	
 	override void visit(const AssocArrayLiteral assocArrayLiteral)
