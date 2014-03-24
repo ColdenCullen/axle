@@ -701,9 +701,8 @@ class DGenerator : ASTVisitor
 		}
 		ifStatement.expression.accept( this );
 		
-		output.writeln( " )\n{" );
+		output.writeln( " )" );
 		ifStatement.thenStatement.accept( this );
-		output.writeln( "}" );
 		
 		if( ifStatement.elseStatement !is null )
 		{
