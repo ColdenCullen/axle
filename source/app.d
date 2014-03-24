@@ -1,7 +1,7 @@
 module app;
 
 import frontend.parser, backend.dgen;
-import std.stdio;
+import std.stdio, std.path;
 
 void main( string[] args )
 {
@@ -11,13 +11,16 @@ void main( string[] args )
 	}
 	else
 	{
-		auto mod = parseFile( args[ 1 ] );
+		// Get name of file to write to
+		auto outFileName = args[1].stripExtension ~ ".d";
 
+		// Translate the code
 		auto gen = new DGenerator;
-		auto outfile = File( "test.d", "w" );
-		gen.output = outfile;
-
-		gen.visit( mod );
+		gen.output = File( outFileName, "w" );
+		gen.visit( parseFile( args[ 1 ] ) );
+		
+		// Call rdmd on file
+		//wait( spawnProcess( [ "rdmd", outFileName ] ~ ( args.length > 2 ? args[ 2..$-1 ] : [] ) ) );
 	}
 }
 

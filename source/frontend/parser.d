@@ -6,18 +6,12 @@ import std.file, std.array;
 
 void doNothing( string, size_t, size_t, string, bool ) { }
 
-Module parseFile( string fileName )
+Module parseFile( string fileName, CAllocator allocator = null, void function( string, size_t, size_t, string, bool ) messageFunction = null )
 {
 	Token[] tokens;
 	foreach( token; byToken( cast(ubyte[])read( fileName ) ) )
 		tokens ~= token;
 
-	return parseWSDModule( tokens, fileName, null, &doNothing );
-}
-
-Module parseWSDModule( const(Token)[] tokens, string fileName, CAllocator allocator = null,
-					void function(string, size_t, size_t, string, bool) messageFunction = null )
-{
 	auto parser = new WSDParser();
 	parser.fileName = fileName;
 	parser.tokens = tokens;
