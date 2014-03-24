@@ -90,7 +90,18 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const ArgumentList argumentList)
 	{
-		mixin (tagAndAccept!"argumentList");
+		//mixin (tagAndAccept!"argumentList");
+
+		if( argumentList.items.length )
+		{
+			visit( argumentList.items[ 0 ] );
+
+			foreach( i; 1..argumentList.items.length )
+			{
+				output.write( ", " );
+				visit( argumentList.items[ i ] );
+			}
+		}
 	}
 	
 	override void visit(const Arguments arguments)
@@ -557,12 +568,16 @@ class DGenerator : ASTVisitor
 
 		output.write( "( " );
 		visit( functionCallExpression.arguments );
-		output.write( " );\n" );
+		output.write( " )" );
 	}
 	
 	override void visit(const FunctionCallStatement functionCallStatement)
 	{
-		mixin (tagAndAccept!"functionCallStatement");
+		output.writeln( "<functionCallStatement>" );
+		//mixin (tagAndAccept!"functionCallStatement");
+		visit( functionCallStatement.functionCallExpression );
+		output.writeln( ";" );
+		output.writeln( "</functionCallStatement>" );
 	}
 	
 	override void visit( const FunctionDeclaration functionDec )
@@ -717,7 +732,11 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const IndexExpression indexExpression)
 	{
-		mixin (tagAndAccept!"indexExpression");
+		//mixin (tagAndAccept!"indexExpression");
+		visit( indexExpression.unaryExpression );
+		output.write( "[ " );
+		visit( indexExpression.argumentList );
+		output.write( " ]" );
 	}
 	
 	override void visit(const InExpression inExpression)
