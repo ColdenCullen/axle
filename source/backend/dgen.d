@@ -191,9 +191,11 @@ class DGenerator : ASTVisitor
 		//output.writeln( "</autoDeclaration>" );
 	}
 	
-	override void visit(const BlockStatement blockStatement)
+	override void visit( const BlockStatement blockStatement )
 	{
-		blockStatement.accept(this);
+		output.writeln( "{" );
+		blockStatement.accept( this );
+		output.writeln( "}" );
 	}
 	
 	override void visit(const BodyStatement bodyStatement)
@@ -595,7 +597,7 @@ class DGenerator : ASTVisitor
 		}
 
 		visit( functionDec.parameters );
-		output.writeln( " )\n{" );
+		output.writeln( " )" );
 
 		if( functionDec.hasAuto )
 			output.writeln( "<auto/>" );
@@ -603,8 +605,6 @@ class DGenerator : ASTVisitor
 			output.writeln( "<ref/>" );
 
 		visit( functionDec.functionBody );
-
-		output.writeln( "}" );
 	}
 	
 	override void visit(const FunctionLiteralExpression functionLiteralExpression)
