@@ -665,6 +665,12 @@ class DGenerator : ASTVisitor
 			}
 		}
 	}
+
+	override void visit(const IdentifierOrTemplateInstance identifierOrTemplateInstance)
+	{
+		//mixin (tagAndAccept!"identifierOrTemplateInstance");
+		identifierOrTemplateInstance.accept( this );
+	}
 	
 	override void visit(const IdentityExpression identityExpression)
 	{
@@ -1103,21 +1109,20 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const SliceExpression sliceExpression)
 	{
-		output.writeln("<sliceExpression>");
-		visit(sliceExpression.unaryExpression);
-		if (sliceExpression.lower !is null)
+		visit( sliceExpression.unaryExpression );
+		output.write( "[ " );
+		if( sliceExpression.lower )
 		{
-			output.writeln("<low>");
-			visit(sliceExpression.lower);
-			output.writeln("</low>");
+			visit( sliceExpression.lower );
 		}
-		if (sliceExpression.upper !is null)
+
+		output.write( ".." );
+
+		if( sliceExpression.upper )
 		{
-			output.writeln("<high>");
-			visit(sliceExpression.upper);
-			output.writeln("</high>");
+			visit( sliceExpression.upper );
 		}
-		output.writeln("</sliceExpression>");
+		output.write( " ]" );
 	}
 	
 	override void visit(const Statement statement)
@@ -1478,7 +1483,6 @@ class DGenerator : ASTVisitor
 	
 	override void visit( const UnaryExpression unaryExpression )
 	{
-		//output.writeln("<unaryExpression>");
 		if (unaryExpression.prefix != tok!"")
 		{
 			output.writeln("<prefix>", xmlEscape(unaryExpression.prefix.text),
@@ -1492,8 +1496,44 @@ class DGenerator : ASTVisitor
 			               "</suffix>");
 		}
 		else
-			unaryExpression.accept( this );
-		//output.writeln("</unaryExpression>");
+		{
+			if( unaryExpression.unaryExpression && unaryExpression.identifierOrTemplateInstance )
+			{
+				visit( unaryExpression.unaryExpression );
+				output.write( "." );
+				visit( unaryExpression.identifierOrTemplateInstance );
+			}
+			else
+			{
+				if( unaryExpression.unaryExpression )
+					visit( unaryExpression.unaryExpression );
+
+				if( unaryExpression.identifierOrTemplateInstance )
+					visit( unaryExpression.identifierOrTemplateInstance );
+			}
+
+			//unaryExpression.accept( this );
+			if( unaryExpression.type )
+				visit( unaryExpression.type );
+			if( unaryExpression.primaryExpression )
+				visit( unaryExpression.primaryExpression );
+			if( unaryExpression.newExpression )
+				visit( unaryExpression.newExpression );
+			if( unaryExpression.deleteExpression )
+				visit( unaryExpression.deleteExpression );
+			if( unaryExpression.castExpression )
+				visit( unaryExpression.castExpression );
+			if( unaryExpression.functionCallExpression )
+				visit( unaryExpression.functionCallExpression );
+			if( unaryExpression.argumentList )
+				visit( unaryExpression.argumentList );
+			if( unaryExpression.assertExpression )
+				visit( unaryExpression.assertExpression );
+			if( unaryExpression.sliceExpression )
+				visit( unaryExpression.sliceExpression );
+			if( unaryExpression.indexExpression )
+				visit( unaryExpression.indexExpression );
+		}
 	}
 	
 	override void visit(const UnionDeclaration unionDeclaration)
