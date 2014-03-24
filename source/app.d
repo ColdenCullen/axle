@@ -15,7 +15,13 @@ void main( string[] args )
 		auto outFileName = args[1].stripExtension ~ ".d";
 
 		// Translate the code
-		auto gen = new DGenerator;
+		auto gen = new
+			//*
+			DGenerator
+			/*/
+			XMLPrinter
+			//*/
+				;
 		gen.output = File( outFileName, "w" );
 		gen.visit( parseFile( args[ 1 ] ) );
 		
