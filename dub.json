@@ -4,6 +4,7 @@
 	"copyright": "Copyright © 2013, Colden Cullen",
 	"authors": [ "Colden Cullen" ],
 	"dependencies": {
+		"dscanner": "~master"
 	},
 	"importPaths": [
 		"source/"

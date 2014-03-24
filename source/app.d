@@ -1,16 +1,23 @@
-import console.scanner;
+module app;
+
+import frontend.parser, backend.dgen;
 import std.stdio;
 
 void main( string[] args )
 {
-	switch( args[ 1 ] )
+	if( args.length == 1 )
 	{
-		case "scanner":
-			runTerminal();
-			break;
-		default:
-			writeln( args );
-			printHelp();
+		printHelp();
+	}
+	else
+	{
+		auto mod = parseFile( args[ 1 ] );
+
+		auto gen = new DGenerator;
+		auto outfile = File( "test.d", "w" );
+		gen.output = outfile;
+
+		gen.visit( mod );
 	}
 }
 
