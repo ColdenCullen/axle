@@ -557,17 +557,30 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"functionCallStatement");
 	}
 	
-	override void visit(const FunctionDeclaration functionDec)
+	override void visit( const FunctionDeclaration functionDec )
 	{
-		output.writeln("<functionDeclaration line=\"", functionDec.name.line, "\">");
-		output.writeln("<name>", functionDec.name.text, "</name>");
-		writeDdoc(functionDec.comment);
-		if (functionDec.hasAuto)
-			output.writeln("<auto/>");
-		if (functionDec.hasRef)
-			output.writeln("<ref/>");
-		functionDec.accept(this);
-		output.writeln("</functionDeclaration>");
+		writeDdoc( functionDec.comment );
+
+		visit( functionDec.returnType.type2 );
+		output.write( " ", functionDec.name.text, "( " );
+
+		if( functionDec.templateParameters )
+		{
+			visit( functionDec.templateParameters );
+			output.write( " )( " );
+		}
+
+		visit( functionDec.parameters );
+		output.writeln( " )\n{" );
+
+		if( functionDec.hasAuto )
+			output.writeln( "<auto/>" );
+		if( functionDec.hasRef )
+			output.writeln( "<ref/>" );
+
+		visit( functionDec.functionBody );
+
+		output.writeln( "}" );
 	}
 	
 	override void visit(const FunctionLiteralExpression functionLiteralExpression)
@@ -614,14 +627,19 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"identifierList");
 	}
 	
-	override void visit(const IdentifierOrTemplateChain identifierOrTemplateChain)
+	override void visit( const IdentifierOrTemplateChain identifierOrTemplateChain )
 	{
-		mixin (tagAndAccept!"identifierOrTemplateChain");
-	}
-	
-	override void visit(const IdentifierOrTemplateInstance identifierOrTemplateInstance)
-	{
-		mixin (tagAndAccept!"identifierOrTemplateInstance");
+		auto idents = identifierOrTemplateChain.identifiersOrTemplateInstances;
+		if( idents.length )
+		{
+			visit( idents[ 0 ] );
+			
+			foreach( i; 1..idents.length )
+			{
+				output.write( "." );
+				visit( idents[ i ] );
+			}
+		}
 	}
 	
 	override void visit(const IdentityExpression identityExpression)
@@ -909,24 +927,24 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"outStatement");
 	}
 	
-	override void visit(const Parameter param)
+	override void visit( const Parameter param )
 	{
-		output.writeln("<parameter>");
-		if (param.name.type == tok!"identifier")
-			output.writeln("<name>", param.name.text, "</name>");
-		foreach (attribute; param.parameterAttributes)
+		foreach( attribute; param.parameterAttributes )
 		{
-			output.writeln("<parameterAttribute>", str(attribute), "</parameterAttribute>");
+			output.write( str( attribute ), " " );
 		}
-		param.accept(this);
-		if (param.vararg)
-			output.writeln("<vararg/>");
-		output.writeln("</parameter>");
-	}
-	
-	override void visit(const Parameters parameters)
-	{
-		mixin (tagAndAccept!"parameters");
+
+		visit( param.type );
+		output.write( " " );
+		visit( param.name );
+
+		if( param.default_ )
+		{
+			visit( param.default_ );
+		}
+
+		if( param.vararg )
+			output.write( "..." );
 	}
 	
 	override void visit(const Postblit postblit)
@@ -1134,11 +1152,6 @@ class DGenerator : ASTVisitor
 		mixin (tagAndAccept!"switchStatement");
 	}
 	
-	override void visit(const Symbol symbol)
-	{
-		mixin (tagAndAccept!"symbol");
-	}
-	
 	override void visit(const SynchronizedStatement synchronizedStatement)
 	{
 		mixin (tagAndAccept!"synchronizedStatement");
@@ -1327,24 +1340,13 @@ class DGenerator : ASTVisitor
 	{
 		mixin (tagAndAccept!"tryStatement");
 	}
-
-	override void visit(const Type type)
-	{
-		output.writeln("<type pretty=\"", "\">");
-		type.accept(this);
-		output.writeln("</type>");
-	}
 	
-	override void visit(const Type2 type2)
+	override void visit( const Type2 type2 )
 	{
 		if (type2.builtinType != tok!"")
-			output.writeln("<type2>", str(type2.builtinType), "</type2>");
+			output.write( str( type2.builtinType ) );
 		else
-		{
-			output.writeln("<type2>");
-			type2.accept(this);
-			output.writeln("</type2>");
-		}
+			type2.accept( this );
 	}
 	
 	override void visit(const TypeSpecialization typeSpecialization)
@@ -1354,15 +1356,15 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const TypeSuffix typeSuffix)
 	{
-		if (typeSuffix.star)
-			output.writeln("<typeSuffix type=\"*\"/>");
+		if( typeSuffix.star )
+			output.write( "*" );
 		else if (typeSuffix.array)
 		{
-			if (typeSuffix.low is null && typeSuffix.type is null)
-				output.writeln("<typeSuffix type=\"[]\"/>");
+			if( typeSuffix.low is null && typeSuffix.type is null )
+				output.write( "[]" );
 			else
 			{
-				if (typeSuffix.low is null)
+				if( typeSuffix.low is null )
 				{
 					output.writeln("<typeSuffix type=\"[]\">");
 					visit(typeSuffix.type);
@@ -1370,7 +1372,7 @@ class DGenerator : ASTVisitor
 				}
 				else
 				{
-					output.writeln("<typeSuffix type=\"[]\">");
+					output.writeln( "<typeSuffix type=\"[]\">" );
 					if (typeSuffix.high !is null)
 					{
 						output.writeln("<low>");
@@ -1381,7 +1383,7 @@ class DGenerator : ASTVisitor
 						output.writeln("</high>");
 					}
 					else
-						visit(typeSuffix.low);
+						visit( typeSuffix.low );
 					output.writeln("</typeSuffix>");
 				}
 			}
