@@ -450,11 +450,11 @@ class DGenerator : ASTVisitor
 	
 	override void visit( const EqualExpression equalExpression )
 	{
-		equalExpression.left.accept( this ) ;
+		visit( equalExpression.left );
 
 		output.write( " ", str( equalExpression.operator ), " " );
 		
-		equalExpression.right.accept( this );
+		visit( equalExpression.right );
 	}
 	
 	override void visit(const Expression expression)
