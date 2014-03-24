@@ -506,38 +506,40 @@ class DGenerator : ASTVisitor
 		output.writeln("</forStatement>");
 	}
 	
-	override void visit(const ForeachStatement foreachStatement)
+	override void visit( const ForeachStatement foreachStatement )
 	{
-		output.writeln("<foreachStatement type=\"", str(
-			foreachStatement.type), "\">");
-		if (foreachStatement.foreachType !is null)
-			visit(foreachStatement.foreachType);
-		if (foreachStatement.foreachTypeList !is null)
-			visit(foreachStatement.foreachTypeList);
-		output.writeln("<low>");
-		visit(foreachStatement.low);
-		output.writeln("</low>");
+		output.write( str( foreachStatement.type ), "( " );
+
+		if( foreachStatement.foreachType )
+			visit( foreachStatement.foreachType );
+		if( foreachStatement.foreachTypeList )
+			visit( foreachStatement.foreachTypeList );
+
+		output.write( "; " );
+
+		visit( foreachStatement.low );
+
 		if (foreachStatement.high !is null)
 		{
-			output.writeln("<high>");
-			visit(foreachStatement.high);
-			output.writeln("</high>");
+			output.write( ".." );
+			visit( foreachStatement.high );
 		}
-		visit(foreachStatement.declarationOrStatement);
-		output.writeln("</foreachStatement>");
+
+		output.writeln( " )" );
+
+		visit( foreachStatement.declarationOrStatement );
 	}
 	
-	override void visit(const ForeachType foreachType)
+	override void visit( const ForeachType foreachType )
 	{
-		output.writeln("<foreachType>");
 		foreach (constructor; foreachType.typeConstructors)
 		{
-			output.writeln("<typeConstructor>", str(constructor), "</typeConstructor>");
+			output.writeln( "<typeConstructor>", str( constructor ), "</typeConstructor>" );
 		}
-		if (foreachType.type !is null)
-			visit(foreachType.type);
-		visit(foreachType.identifier);
-		output.writeln("</foreachType>");
+		if( foreachType.type !is null )
+			visit( foreachType.type );
+
+		visit( foreachType.identifier );
 		
 	}
 	
