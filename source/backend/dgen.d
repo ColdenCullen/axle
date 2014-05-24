@@ -382,10 +382,10 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const Declarator declarator)
 	{
-		output.writeln("<declarator line=\"", declarator.name.line, "\">");
-		output.writeln("<name>", declarator.name.text, "</name>");
-		declarator.accept(this);
-		output.writeln("</declarator>");
+		output.write( " " );
+		output.write( declarator.name.text );
+		output.write( " = " );
+		declarator.accept( this );
 	}
 	
 	override void visit(const DefaultStatement defaultStatement)
@@ -483,27 +483,29 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const ForStatement forStatement)
 	{
-		output.writeln("<forStatement>");
-		if (forStatement.declarationOrStatement !is null)
+		output.write( "for( " );
+
+		if( forStatement.declarationOrStatement )
 		{
-			output.writeln("<initialization>");
-			visit(forStatement.initialization);
-			output.writeln("</initialization>");
+			visit( forStatement.initialization );
 		}
-		if (forStatement.test !is null)
+
+		output.write( "; " );
+
+		if( forStatement.test )
 		{
-			output.writeln("<test>");
-			visit(forStatement.test);
-			output.writeln("</test>");
+			visit( forStatement.test );
 		}
-		if (forStatement.increment !is null)
+
+		output.write( "; " );
+
+		if( forStatement.increment )
 		{
-			output.writeln("<increment>");
-			visit(forStatement.increment);
-			output.writeln("</increment>");
+			visit( forStatement.increment );
 		}
-		visit(forStatement.declarationOrStatement);
-		output.writeln("</forStatement>");
+
+		output.writeln( " )" );
+		visit( forStatement.declarationOrStatement );
 	}
 	
 	override void visit( const ForeachStatement foreachStatement )
@@ -1044,15 +1046,9 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const RelExpression relExpression)
 	{
-		output.writeln("<relExpression operator=\"",
-		               xmlEscape(str(relExpression.operator)), "\">");
-		output.writeln("<left>");
-		relExpression.left.accept(this);
-		output.writeln("</left>");
-		output.writeln("<right>");
-		relExpression.right.accept(this);
-		output.writeln("</right>");
-		output.writeln("</relExpression>");
+		visit( relExpression.left );
+		output.write( " ", str( relExpression.operator ), " " );
+		visit( relExpression.right );
 	}
 	
 	override void visit(const ReturnStatement returnStatement)
@@ -1484,17 +1480,15 @@ class DGenerator : ASTVisitor
 	
 	override void visit( const UnaryExpression unaryExpression )
 	{
-		if (unaryExpression.prefix != tok!"")
+		if( unaryExpression.prefix != tok!"" )
 		{
-			output.writeln("<prefix>", xmlEscape(unaryExpression.prefix.text),
-			               "</prefix>");
-			unaryExpression.unaryExpression.accept(this);
+			output.write( /*unaryExpression.prefix.text*/ "++" );
+			unaryExpression.unaryExpression.accept( this );
 		}
-		if (unaryExpression.suffix != tok!"")
+		if( unaryExpression.suffix != tok!"" )
 		{
-			unaryExpression.unaryExpression.accept(this);
-			output.writeln("<suffix>", unaryExpression.suffix.text,
-			               "</suffix>");
+			unaryExpression.unaryExpression.accept( this );
+			output.write( unaryExpression.suffix.text );
 		}
 		else
 		{
@@ -1560,11 +1554,8 @@ class DGenerator : ASTVisitor
 	
 	override void visit(const VariableDeclaration variableDeclaration)
 	{
-		//output.writeln("<variableDeclaration>");
 		writeDdoc( variableDeclaration.comment );
 		variableDeclaration.accept( this );
-		output.writeln( ";" );
-		//output.writeln("</variableDeclaration>");
 	}
 	
 	override void visit(const Vector vector)

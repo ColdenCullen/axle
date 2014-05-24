@@ -6,4 +6,9 @@ void main( string[] args )
 {
 	foreach( i; 0..10 )
 		writeln( i );
+
+	for( int i  = 10; i < 20; ++i )
+	{
+		writeln( i );
+	}
 }
