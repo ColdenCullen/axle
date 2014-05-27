@@ -102,11 +102,11 @@ private struct Character
 
 class Scanner
 {
-static
-{
 public:
-    static this()
+    this( string stringToParse )
     {
+        workingString = stringToParse;
+
         // ======================================
         // Functions for parsing
         // ======================================
@@ -277,10 +277,8 @@ public:
             TmEntry( TokenState.End, &ignore );
     }
 
-    Token[] getAllTokens( string toParse )
+    Token[] getAllTokens()
     {
-        // Save string to parse
-        workingString = toParse;
         // Create array of tokens to save to
         Token[] tokensFound;
         // Token to save into
@@ -325,7 +323,7 @@ private:
     TokenState currentState;
     string workingString;
 
-    struct TmEntry
+    static struct TmEntry
     {
         TokenState next;
         void delegate( ref Token working, char newChar ) action;
@@ -370,7 +368,7 @@ private:
         return token;
     }
 
-    InputClass getClass( char character )
+    static InputClass getClass( char character )
     {
         switch( character )
         {
@@ -407,5 +405,4 @@ private:
                 return InputClass.Other;
         }
     }
-}
 }
