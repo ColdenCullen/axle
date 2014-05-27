@@ -40,10 +40,10 @@ public:
 	}
 
 protected:
-	aScope				parent;
+	aScope parent;
 
 	unittest
 	{
-		assert( aScope.Type.className == "aScope" );
+		//assert( aScope.Type.className == "aScope" );
 	}
 }
