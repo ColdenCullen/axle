@@ -20,6 +20,8 @@ private struct Character
         Semicolon,
         SingleQuote,
         DoubleQuote,
+        Asterisk,
+        Slash,
         Other,
     }
 
@@ -76,6 +78,8 @@ private struct Character
             mixin( letter( Type.Semicolon, ';' ) );
             mixin( letter( Type.SingleQuote, '\'' ) );
             mixin( letter( Type.DoubleQuote, '\"' ) );
+            mixin( letter( Type.Asterisk, '*' ) );
+            mixin( letter( Type.Slash, '/' ) );
             default: type = Type.Other; break;
         }
     }
