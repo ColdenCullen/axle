@@ -107,63 +107,64 @@ class Scanner
 public:
     this( string stringToParse )
     {
-        workingString = stringToParse;
+        import std.algorithm, std.array : array;
+        workingString = stringToParse.map!( ch => Character( cast(char)ch ) ).array;
 
         // ======================================
         // Functions for parsing
         // ======================================
-        void ignore( ref Token working, Character newChar ) { }
+        void ignore( Character newChar ) { }
 
-        void identifier_start( ref Token working, Character newChar )
+        void identifier_start( Character newChar )
         {
-            working = new IdentifierToken();
-            save( working, newChar );
+            currentToken = new IdentifierToken();
+            save( newChar );
         }
 
-        void number_start( ref Token working, Character newChar )
+        void number_start( Character newChar )
         {
-            working = new IntegerToken();
-            save( working, newChar );
+            currentToken = new IntegerToken();
+            save( newChar );
         }
 
-        void number_decimal( ref Token working, Character newChar )
+        void number_decimal( Character newChar )
         {
-            if( typeid(working) == typeid(IntegerToken) )
-                working = ( cast(IntegerToken)working ).toDecimal;
+            if( auto intTok = cast(IntegerToken)currentToken )
+                currentToken = intTok.toDecimal;
             else
-                working.isValid = false;
+                currentToken.isValid = false;
 
-            working.addChar( newChar.character );
+            currentToken.addChar( newChar.character );
             consume();
         }
 
-        void operator_start( ref Token working, Character newChar )
+        void operator_start( Character newChar )
         {
-            working = new OperatorToken( newChar.character ~ "" );
+            currentToken = new OperatorToken( newChar.character ~ "" );
             consume();
         }
 
-        void operator_working( ref Token working, Character newChar )
+        void operator_working( Character newChar )
         {
-            save( working, newChar );
+            save( newChar );
 
-            if( (cast(OperatorToken)working).type == OperatorToken.OperatorType.DoubleSlash )
+            if( (cast(OperatorToken)currentToken).type == OperatorToken.OperatorType.DoubleSlash )
             {
-                working = new CommentToken( CommentToken.CommentType.SingleLine );
-                working.token = "//";
+                currentToken = new CommentToken( CommentToken.CommentType.SingleLine );
+                currentToken.token = "//";
                 currentState = TokenState.Comment;
             }
         }
 
-        void semicolon( ref Token working, Character newChar )
+        void semicolon( Character newChar )
         {
-            working = new SemicolonToken;
+            currentToken = new SemicolonToken;
             consume();
         }
 
-        void comment( ref Token working, Character newChar )
+        void comment( Character newChar )
         {
-            auto com = cast(CommentToken)working;
+            auto com = cast(CommentToken)currentToken;
 
             switch( com.type ) with( CommentToken.CommentType )
             {
@@ -178,12 +179,12 @@ public:
                     break;
             }
 
-            save( working, newChar );
+            save( newChar );
         }
 
-        void invalid( ref Token working, Character newChar )
+        void invalid( Character newChar )
         {
-            working.isValid = false;
+            currentToken.isValid = false;
             consume();
         }
 
@@ -191,7 +192,7 @@ public:
         // Initialize translation matrix
         // ======================================
         tm[ TokenState.Begin ][ Character.Type.Whitespace ] =
-            TmEntry( TokenState.Begin, ( ref tok, ch ) => consume() );
+            TmEntry( TokenState.Begin, ( ch ) => consume() );
 
         // Token is identifier
         tm[ TokenState.Begin ][ Character.Type.Underscore ] =
@@ -203,7 +204,7 @@ public:
         tm[ TokenState.Identifier ][ Character.Type.Alpha ] =
         tm[ TokenState.Identifier ][ Character.Type.Zero ] =
         tm[ TokenState.Identifier ][ Character.Type.OneNine ] =
-            TmEntry( TokenState.Identifier, ( ref tok, ch ) => save( tok, ch ) );
+            TmEntry( TokenState.Identifier, &save );
 
         // If at the beginning and find a number, start a number
         tm[ TokenState.Begin ][ Character.Type.OneNine ] =
@@ -213,7 +214,7 @@ public:
         tm[ TokenState.Number ][ Character.Type.OneNine ] =
         tm[ TokenState.Number ][ Character.Type.Zero ] =
         tm[ TokenState.Number ][ Character.Type.Underscore ] =
-            TmEntry( TokenState.Number, ( ref tok, ch ) => save( tok, ch ) );
+            TmEntry( TokenState.Number, &save );
 
         // If you have a number and find a decimal, convert number to decimal
         tm[ TokenState.Number ][ Character.Type.Dot ] =
@@ -261,21 +262,72 @@ public:
             TmEntry( TokenState.End, &ignore );
     }
 
-    Token[] getAllTokens()
+    /**
+     * Get a lazy range for getting all tokens.
+     */
+    auto getAllTokens()
     {
-        // Create array of tokens to save to
-        Token[] tokensFound;
-        // Token to save into
-        Token temp = null;
-
-        // Get next token
-        while( ( temp = getNextToken() ) !is null )
+        struct GetAllTokens
         {
-            // Insert and increment counter
-            tokensFound ~= temp;
+            private Scanner scanner;
+            Token front;
+
+            this( Scanner scan )
+            {
+                scanner = scan;
+                front = scanner.getNextToken();
+            }
+
+            void popFront()
+            {
+                front = scanner.getNextToken();
+            }
+
+            @property bool empty()
+            {
+                return scanner.workingString.length == 0;
+            }
         }
 
-        return tokensFound;
+        return GetAllTokens( this );
+    }
+
+    /**
+     * Get the next token in the string.
+     */
+    Token getNextToken()
+    {
+        if( workingString.length == 0 )
+            return null;
+
+        // Reset state
+        currentState = TokenState.Begin;
+
+        // The character currently being operated on.
+        Character currentChar;
+
+        // Iterate until we hit the end or run out of characters
+        while( currentState != TokenState.End && workingString.length )
+        {
+            // Get the character
+            currentChar = workingString[ 0 ];
+
+            // Get next entry
+            auto entry = &tm[ currentState ][ currentChar.type ];
+
+            // Set next state
+            currentState = entry.next;
+
+            // Perform specified action
+            entry.action( currentChar );
+        }
+
+        if( currentToken is null || !currentToken.isValid )
+        {
+            // Handle error
+        }
+
+        return currentToken;
     }
 
 private:
@@ -289,54 +341,20 @@ private:
         End,
     }
 
-    // Beginning state
+    // State of the current token.
     TokenState currentState;
-    string workingString;
+    // The string of characters to lex.
+    Character[] workingString;
+    // The current working token.
+    Token currentToken;
 
     static struct TmEntry
     {
         TokenState next;
-        void delegate( ref Token, Character ) action;
+        void delegate( Character ) action;
     }
 
     TmEntry[ Character.Type ][ TokenState ] tm;
-
-    Token getNextToken()
-    {
-        if( workingString.length == 0 )
-            return null;
-
-        // Reset state
-        currentState = TokenState.Begin;
-
-        // Current working token
-        Token token;
-
-        Character currentChar = Character( workingString[ 0 ] );
-
-        // Iterate until we hit the end or run out of characters
-        while( currentState != TokenState.End && workingString.length )
-        {
-            // Get the character
-            currentChar = Character( workingString[ 0 ] );
-
-            // Get next entry
-            auto entry = &tm[ currentState ][ currentChar.type ];
-
-            // Set next state
-            currentState = entry.next;
-
-            // Perform specified action
-            entry.action( token, currentChar );
-        }
-
-        if( token is null || !token.isValid )
-        {
-            // Handle error
-        }
-
-        return token;
-    }
 
     // Helper functions
     void consume()
@@ -344,9 +362,9 @@ private:
         workingString = workingString[ 1..$ ];
     }
 
-    void save( Token tok, Character ch )
+    void save( Character ch )
     {
-        tok.addChar( ch.character );
+        currentToken.addChar( ch.character );
         consume();
     }
 }
