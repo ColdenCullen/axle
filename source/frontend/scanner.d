@@ -140,8 +140,8 @@ public:
 
         void operator_start( Character newChar )
         {
-            currentToken = new OperatorToken( newChar.character ~ "" );
-            consume();
+            currentToken = new OperatorToken;
+            save( newChar );
         }
 
         void operator_working( Character newChar )
@@ -188,7 +188,7 @@ public:
             {
                 currentToken = new IdentifierToken();
             }
-            
+
             save( newChar );
             currentToken.isValid = false;
         }

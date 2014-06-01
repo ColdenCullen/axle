@@ -174,12 +174,6 @@ public:
 
     OperatorType type;
 
-    this( string op = "" )
-    {
-        if( op != "" )
-            addChar( op[ 0 ] );
-    }
-
     override void addChar( char toAdd )
     {
         token ~= toAdd;
