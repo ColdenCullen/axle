@@ -25,6 +25,42 @@ public:
     override void addChar( char toAdd ) { token ~= toAdd; }
 }
 
+class KeywordToken : IdentifierToken
+{
+public:
+    enum Keyword
+    {
+        Auto = "auto",
+        Return = "return",
+        Class = "class",
+        Struct = "struct",
+    }
+
+    this( string name )
+    {
+        super( name );
+    }
+
+    Keyword word;
+}
+
+IdentifierToken tryToKeyword( IdentifierToken tok )
+{
+    import std.traits;
+    foreach( keyword; EnumMembers!( KeywordToken.Keyword ) )
+    {
+        if( cast(string)keyword == tok.token )
+        {
+            KeywordToken keyTok = new KeywordToken( tok.token );
+            keyTok.word = keyword;
+            return keyTok;
+        }
+    }
+
+    // If not keyword, return original.
+    return tok;
+}
+
 class DecimalToken : Token
 {
 public:

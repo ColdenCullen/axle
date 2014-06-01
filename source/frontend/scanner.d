@@ -344,6 +344,11 @@ public:
             writeln( "WARNING: Invalid token ", currentToken.toString(), " of type ", typeid(currentToken).name );
         }
 
+        if( auto ident = cast(IdentifierToken)currentToken )
+        {
+            currentToken = ident.tryToKeyword();
+        }
+
         return currentToken;
     }
 
