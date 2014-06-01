@@ -347,6 +347,22 @@ public:
         return currentToken;
     }
 
+    unittest
+    {
+        auto scan = new Scanner( q{
+            3.1;
+        } );
+
+        Token tok;
+
+        tok = scan.getNextToken();
+        assert( typeid(tok) == typeid(DecimalToken) );
+        assert( (cast(DecimalToken)tok).value == 3.1f );
+
+        tok = scan.getNextToken();
+        assert( typeid(tok) == typeid(SemicolonToken) );
+    }
+
 private:
     enum TokenState
     {
