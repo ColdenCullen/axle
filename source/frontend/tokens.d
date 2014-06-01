@@ -33,7 +33,7 @@ public:
     this( float val = 0.0f )
     {
         value = val;
-        digitCount = 0;
+        deciamalCount = 0;
     }
 
     override void addChar( char toAdd )
@@ -41,15 +41,15 @@ public:
         token ~= toAdd;
 
         // Ignore underscores.
-        if( toAdd == '_' )
+        if( toAdd == '_' || toAdd == '.' )
             return;
 
-        value += cast(float)( toAdd - 48 ) / pow( 10, ++digitCount );
+        value += cast(float)( toAdd - 48 ) / cast(float)pow( 10, ++deciamalCount );
     }
     override @property string toString() { return to!string( value ); }
 
 private:
-    uint digitCount;
+    uint deciamalCount;
 }
 
 class IntegerToken : Token
