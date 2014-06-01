@@ -190,3 +190,6 @@ test-results/
 *.lib_cv
 __dummy.html
 docs.json
+
+__test__library__
+axle
