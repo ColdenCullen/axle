@@ -184,15 +184,13 @@ public:
 
         void invalid( Character newChar )
         {
-            if( currentToken )
+            if( !currentToken )
             {
-                save( newChar );
-                currentToken.isValid = false;
+                currentToken = new IdentifierToken();
             }
-            else
-            {
-                consume();
-            }
+            
+            save( newChar );
+            currentToken.isValid = false;
         }
 
         import std.traits;
@@ -344,6 +342,7 @@ public:
             writeln( "WARNING: Invalid token ", currentToken.toString(), " of type ", typeid(currentToken).name );
         }
 
+        // Check if token is keyword.
         if( auto ident = cast(IdentifierToken)currentToken )
         {
             currentToken = ident.tryToKeyword();
