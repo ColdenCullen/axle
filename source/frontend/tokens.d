@@ -1,6 +1,5 @@
 module frontend.tokens;
-import std.conv, std.math;
-import std.stdio;
+import std.conv, std.math, std.stdio, std.array;
 
 abstract class Token
 {
@@ -69,7 +68,16 @@ public:
     this( float val = 0.0f )
     {
         value = val;
-        deciamalCount = 0;
+
+        auto chars = value.to!string.split( '.' );
+        if( chars.length < 2 )
+        {
+            decimalCount = 0;
+        }
+        else
+        {
+            decimalCount = cast(uint)chars[ 1 ].length;
+        }
     }
 
     override void addChar( char toAdd )
@@ -80,12 +88,12 @@ public:
         if( toAdd == '_' || toAdd == '.' )
             return;
 
-        value += cast(float)( toAdd - 48 ) / cast(float)pow( 10, ++deciamalCount );
+        value += cast(float)( toAdd - 48 ) / cast(float)pow( 10, ++decimalCount );
     }
     override @property string toString() { return to!string( value ); }
 
 private:
-    uint deciamalCount;
+    uint decimalCount;
 }
 
 class IntegerToken : Token
