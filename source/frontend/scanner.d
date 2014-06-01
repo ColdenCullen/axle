@@ -184,9 +184,28 @@ public:
 
         void invalid( Character newChar )
         {
-            currentToken.isValid = false;
-            consume();
+            if( currentToken )
+            {
+                save( newChar );
+                currentToken.isValid = false;
+            }
+            else
+            {
+                consume();
+            }
         }
+
+        import std.traits;
+
+        // Set default to invalid.
+        foreach( state; EnumMembers!TokenState )
+            foreach( type; EnumMembers!( Character.Type ) )
+                tm[ state ][ type ] = TmEntry( state, &invalid );
+
+        // Make comments eat everything.
+        foreach( member; EnumMembers!( Character.Type ) )
+            tm[ TokenState.Comment ][ member ] =
+                TmEntry( TokenState.Comment, &comment );
 
         // ======================================
         // Initialize translation matrix
@@ -243,11 +262,6 @@ public:
         tm[ TokenState.Begin ][ Character.Type.Dot ] =
             TmEntry( TokenState.End, &operator_start );
 
-        import std.traits;
-        foreach( member; EnumMembers!( Character.Type ) )
-            tm[ TokenState.Comment ][ member ] =
-                TmEntry( TokenState.Comment, &comment );
-
         // Done with token
         tm[ TokenState.Number ][ Character.Type.Whitespace ] =
         //tm[ TokenState.Number ][ Character.Type.Operator ] =
@@ -302,6 +316,7 @@ public:
 
         // Reset state
         currentState = TokenState.Begin;
+        currentToken = null;
 
         // The character currently being operated on.
         Character currentChar;
@@ -322,9 +337,11 @@ public:
             entry.action( currentChar );
         }
 
-        if( currentToken is null || !currentToken.isValid )
+        if( currentToken && !currentToken.isValid )
         {
             // Handle error
+            import std.stdio;
+            writeln( "WARNING: Invalid token ", currentToken.token, " of type ", typeid(currentToken).name );
         }
 
         return currentToken;
