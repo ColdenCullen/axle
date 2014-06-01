@@ -5,188 +5,198 @@ import std.stdio;
 abstract class Token
 {
 public:
-	abstract void addChar( char toAdd );
-	override string toString()
-	{
-		return token;
-	}
-	bool isValid = true;
-	string token;
+    abstract void addChar( char toAdd );
+    override string toString()
+    {
+        return token;
+    }
+    bool isValid = true;
+    string token;
 }
 
 class IdentifierToken : Token
 {
 public:
-	string name;
+    string name;
 
-	this( string name = "" )
-	{
-		this.name = name;
-	}
+    this( string name = "" )
+    {
+        this.name = name;
+    }
 
-	override void addChar( char toAdd ) { name ~= toAdd; }
-	override @property string toString() { return name; }
+    override void addChar( char toAdd ) { name ~= toAdd; }
+    override @property string toString() { return name; }
 }
 
 class DecimalToken : Token
 {
 public:
-	float value;
+    float value;
 
-	this( float val = 0.0f )
-	{
-		value = val;
-		digitCount = 0;
-	}
+    this( float val = 0.0f )
+    {
+        value = val;
+        digitCount = 0;
+    }
 
-	override void addChar( char toAdd )
-	{
-		token ~= toAdd;
-		value += cast(float)( toAdd - 48 ) / pow( 10, ++digitCount );
-	}
-	override @property string toString() { return to!string( value ); }
+    override void addChar( char toAdd )
+    {
+        token ~= toAdd;
+
+        // Ignore underscores.
+        if( toAdd == '_' )
+            return;
+
+        value += cast(float)( toAdd - 48 ) / pow( 10, ++digitCount );
+    }
+    override @property string toString() { return to!string( value ); }
 
 private:
-	uint digitCount;
+    uint digitCount;
 }
 
 class IntegerToken : Token
 {
 public:
-	int value;
+    int value;
 
-	this( int val = 0 )
-	{
-		value = val;
-	}
+    this( int val = 0 )
+    {
+        value = val;
+    }
 
-	DecimalToken toDecimal()
-	{
-		return new DecimalToken( value );
-	}
+    DecimalToken toDecimal()
+    {
+        return new DecimalToken( value );
+    }
 
-	override void addChar( char toAdd )
-	{
-		token ~= toAdd;
-		value *= 10;
-		value += toAdd - 48;
-	}
-	override @property string toString() { return to!string( value ); }
+    override void addChar( char toAdd )
+    {
+        token ~= toAdd;
+
+        // Ignore underscores.
+        if( toAdd == '_' )
+            return;
+
+        value *= 10;
+        value += toAdd - 48;
+    }
+    override @property string toString() { return to!string( value ); }
 }
 
 class SemicolonToken : Token
 {
 public:
-	this()
-	{
-		token = ";";
-	}
+    this()
+    {
+        token = ";";
+    }
 
-	override void addChar( char newChar ) { }
+    override void addChar( char newChar ) { }
 }
 
 class CommentToken : Token
 {
 public:
-	enum CommentType
-	{
-		SingleLine,
-		MultiLine,
-		Documentation,
-	}
+    enum CommentType
+    {
+        SingleLine,
+        MultiLine,
+        Documentation,
+    }
 
-	CommentType type;
+    CommentType type;
 
-	this( CommentType type )
-	{
-		this.type = type;
-	}
+    this( CommentType type )
+    {
+        this.type = type;
+    }
 
-	override void addChar( char toAdd )
-	{
-		token ~= toAdd;
-	}
+    override void addChar( char toAdd )
+    {
+        token ~= toAdd;
+    }
 }
 
 class OperatorToken : Token
 {
 public:
-	enum OperatorType
-	{
-		Assignment,
-		Dot,
-		Star,
-		DoubleSlash,
-		Slash,
-		Plus,
-		Minus,
-		OpenBrace,
-		CloseBrace,
-		OpenBracket,
-		CloseBracket,
-		OpenParenthesis,
-		CloseParenthesis,
-		Invalid,
-	}
+    enum OperatorType
+    {
+        Assignment,
+        Dot,
+        Star,
+        DoubleSlash,
+        Slash,
+        Plus,
+        Minus,
+        OpenBrace,
+        CloseBrace,
+        OpenBracket,
+        CloseBracket,
+        OpenParenthesis,
+        CloseParenthesis,
+        Invalid,
+    }
 
-	OperatorType type;
+    OperatorType type;
 
-	this( string op = "" )
-	{
-		if( op != "" )
-			addChar( op[ 0 ] );
-	}
+    this( string op = "" )
+    {
+        if( op != "" )
+            addChar( op[ 0 ] );
+    }
 
-	override void addChar( char toAdd )
-	{
-		token ~= toAdd;
+    override void addChar( char toAdd )
+    {
+        token ~= toAdd;
 
-		switch( token )
-		{
-		case "=":
-			type = OperatorType.Assignment;
-			break;
-		case ".":
-			type = OperatorType.Dot;
-			break;
-		case "*":
-			type = OperatorType.Star;
-			break;
-		case "//":
-			type = OperatorType.DoubleSlash;
-			break;
-		case "/":
-			type = OperatorType.Slash;
-			break;
-		case "+":
-			type = OperatorType.Plus;
-			break;
-		case "-":
-			type = OperatorType.Minus;
-			break;
-		case "{":
-			type = OperatorType.OpenBrace;
-			break;
-		case "}":
-			type = OperatorType.CloseBrace;
-			break;
-		case "[":
-			type = OperatorType.OpenBracket;
-			break;
-		case "]":
-			type = OperatorType.CloseBracket;
-			break;
-		case "(":
-			type = OperatorType.OpenParenthesis;
-			break;
-		case ")":
-			type = OperatorType.CloseParenthesis;
-			break;
-		default:
-			type = OperatorType.Invalid;
-			isValid = false;
-			break;
-		}
-	}
-	override @property string toString() { return to!string( type ); }
+        switch( token )
+        {
+        case "=":
+            type = OperatorType.Assignment;
+            break;
+        case ".":
+            type = OperatorType.Dot;
+            break;
+        case "*":
+            type = OperatorType.Star;
+            break;
+        case "//":
+            type = OperatorType.DoubleSlash;
+            break;
+        case "/":
+            type = OperatorType.Slash;
+            break;
+        case "+":
+            type = OperatorType.Plus;
+            break;
+        case "-":
+            type = OperatorType.Minus;
+            break;
+        case "{":
+            type = OperatorType.OpenBrace;
+            break;
+        case "}":
+            type = OperatorType.CloseBrace;
+            break;
+        case "[":
+            type = OperatorType.OpenBracket;
+            break;
+        case "]":
+            type = OperatorType.CloseBracket;
+            break;
+        case "(":
+            type = OperatorType.OpenParenthesis;
+            break;
+        case ")":
+            type = OperatorType.CloseParenthesis;
+            break;
+        default:
+            type = OperatorType.Invalid;
+            isValid = false;
+            break;
+        }
+    }
+    override @property string toString() { return to!string( type ); }
 }
