@@ -17,15 +17,12 @@ public:
 class IdentifierToken : Token
 {
 public:
-    string name;
-
     this( string name = "" )
     {
-        this.name = name;
+        this.token = name;
     }
 
-    override void addChar( char toAdd ) { name ~= toAdd; }
-    override @property string toString() { return name; }
+    override void addChar( char toAdd ) { token ~= toAdd; }
 }
 
 class DecimalToken : Token

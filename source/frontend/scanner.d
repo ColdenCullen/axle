@@ -341,7 +341,7 @@ public:
         {
             // Handle error
             import std.stdio;
-            writeln( "WARNING: Invalid token ", currentToken.token, " of type ", typeid(currentToken).name );
+            writeln( "WARNING: Invalid token ", currentToken.toString(), " of type ", typeid(currentToken).name );
         }
 
         return currentToken;
