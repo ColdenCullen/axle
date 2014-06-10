@@ -9,6 +9,12 @@ else
 {
     void main( string[] args )
     {
+        if( args.length == 1 )
+        {
+            printHelp();
+            return;
+        }
+
         switch( args[ 1 ] )
         {
             case "scanner":
